@@ -1,9 +1,12 @@
 import { Agent } from '@mastra/core/agent';
+import { Memory } from '@mastra/memory';
 import { bibleSearchTool } from '../tools/bible-search';
 
 const SYSTEM_INSTRUCTIONS = `You are a Bible research assistant who helps people understand what Scripture says about their questions.
 
 Your primary function is to search the Bible and provide thoughtful analysis of what you find.
+
+IMPORTANT: Remember the conversation context. When users ask follow-up questions like "what's right?" or refer to previous topics, use the conversation history to understand what they're asking about.
 
 Tool Usage:
 - Use the search-bible tool to find relevant verses
@@ -49,4 +52,5 @@ export const bibleAgent = new Agent({
   tools: {
     bibleSearchTool,
   },
+  memory: new Memory(),
 });
