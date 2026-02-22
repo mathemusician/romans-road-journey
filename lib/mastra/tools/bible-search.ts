@@ -4,12 +4,9 @@ import { bibleRAG } from '../../rag/bible-rag';
 
 export const bibleSearchTool = createTool({
   id: 'search-bible',
-  description: `Search the Bible for verses related to a query. This tool performs comprehensive semantic and keyword search across all 31,100 Bible verses. Use this when the user asks questions about what the Bible says on any topic.`,
+  description: `Search the Bible for verses related to a query. This tool performs comprehensive semantic and keyword search across all 31,100 Bible verses. Use this when the user asks questions about what the Bible says on any topic. Simply provide the user's question as the query parameter.`,
   inputSchema: z.object({
-    query: z.string().describe('The user\'s question or topic to search for in the Bible'),
-    keywordTerms: z.array(z.string()).optional().describe('Exact keyword terms from the query'),
-    semanticTerms: z.array(z.string()).optional().describe('Conceptually related terms'),
-    biblicalTerms: z.array(z.string()).optional().describe('Biblical language equivalents (e.g., leviathan, behemoth, mammon)'),
+    query: z.string().describe('The user\'s question or topic to search for in the Bible (e.g., "what does the bible say about monsters?")'),
   }),
   outputSchema: z.object({
     verses: z.array(z.object({
@@ -21,15 +18,11 @@ export const bibleSearchTool = createTool({
     })),
     count: z.number(),
   }),
-  execute: async ({ query, keywordTerms = [], semanticTerms = [], biblicalTerms = [] }) => {
+  execute: async ({ query }) => {
     console.log('[Bible Search Tool] Searching for:', query);
-    console.log('[Bible Search Tool] Terms:', { keywordTerms, semanticTerms, biblicalTerms });
 
-    // Combine all expanded terms
-    const allExpandedTerms = [...keywordTerms, ...semanticTerms, ...biblicalTerms];
-
-    // Perform hybrid search with context enrichment
-    const results = await bibleRAG.hybridSearch(query, 20, 0.6, allExpandedTerms);
+    // Perform hybrid search without expanded terms (RAG will handle it internally)
+    const results = await bibleRAG.hybridSearch(query, 20, 0.6, []);
 
     const verses = results.map(r => ({
       reference: r.verse.reference,
