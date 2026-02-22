@@ -45,29 +45,17 @@ export async function POST(req: NextRequest) {
     const streamResult = await agent.stream(messages);
     
     // Create a new ReadableStream that transforms Mastra chunks to AI SDK format
-    const searchResults: any[] = [];
-    
     const aiSdkStream = new ReadableStream({
       async start(controller) {
         const reader = streamResult.fullStream.getReader();
         
         try {
+          // Stream text chunks
           while (true) {
             const { done, value } = await reader.read();
-            if (done) {
-              // Send collected search results as final data event
-              if (searchResults.length > 0) {
-                controller.enqueue({
-                  type: 'data',
-                  data: { searchResults }
-                });
-                console.log('[STREAM] Sent search results:', searchResults.length);
-              }
-              break;
-            }
+            if (done) break;
             
             const chunk = value as any;
-            console.log('[STREAM] Chunk type:', chunk.type);
             
             // Transform Mastra text-delta chunks to AI SDK format
             if (chunk.type === 'text-delta') {
@@ -75,17 +63,36 @@ export async function POST(req: NextRequest) {
                 type: 'text-delta',
                 textDelta: chunk.payload?.text || ''
               });
-            } else if (chunk.type === 'bible-search-result') {
-              // Collect custom search result events
-              console.log('[STREAM] Captured bible-search-result:', chunk);
-              searchResults.push({
-                query: chunk.query,
-                verses: chunk.verses,
-                count: chunk.count
+            }
+          }
+          
+          // After stream completes, get tool results from the promise
+          const toolResults = await streamResult.toolResults;
+          console.log('[STREAM] Tool results:', toolResults);
+          
+          // Extract search results from tool results
+          if (toolResults && toolResults.length > 0) {
+            const searchResults = toolResults
+              .filter((tr: any) => tr.toolName === 'search-bible')
+              .map((tr: any) => {
+                const result = typeof tr.result === 'string' ? JSON.parse(tr.result) : tr.result;
+                return {
+                  query: tr.args?.query || 'Unknown query',
+                  verses: result.verses || [],
+                  count: result.count || 0
+                };
               });
+            
+            if (searchResults.length > 0) {
+              controller.enqueue({
+                type: 'data',
+                data: { searchResults }
+              });
+              console.log('[STREAM] Sent search results:', searchResults.length);
             }
           }
         } catch (error) {
+          console.error('[STREAM] Error:', error);
           controller.error(error);
         } finally {
           reader.releaseLock();

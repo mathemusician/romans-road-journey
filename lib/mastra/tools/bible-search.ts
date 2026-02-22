@@ -18,7 +18,7 @@ export const bibleSearchTool = createTool({
     })),
     count: z.number(),
   }),
-  execute: async ({ query }, context) => {
+  execute: async ({ query }) => {
     console.log('[Bible Search Tool] Searching for:', query);
 
     // Perform hybrid search without expanded terms (RAG will handle it internally)
@@ -33,39 +33,6 @@ export const bibleSearchTool = createTool({
     }));
 
     console.log('[Bible Search Tool] Found', verses.length, 'verses');
-
-    // Emit custom event with search results so they appear in the stream
-    console.log('[Bible Search Tool] Context:', context ? 'exists' : 'undefined');
-    console.log('[Bible Search Tool] Writer:', context?.writer ? 'exists' : 'undefined');
-    
-    if (context?.writer) {
-      console.log('[Bible Search Tool] Emitting custom event...');
-      try {
-        // Try custom() method for UI-level events
-        if (typeof context.writer.custom === 'function') {
-          context.writer.custom({
-            type: 'bible-search-result',
-            query,
-            verses,
-            count: verses.length,
-          });
-          console.log('[Bible Search Tool] Event emitted via custom()');
-        } else {
-          // Fallback to write()
-          context.writer.write({
-            type: 'bible-search-result',
-            query,
-            verses,
-            count: verses.length,
-          });
-          console.log('[Bible Search Tool] Event emitted via write()');
-        }
-      } catch (error) {
-        console.error('[Bible Search Tool] Error emitting event:', error);
-      }
-    } else {
-      console.log('[Bible Search Tool] WARNING: No writer available, cannot emit event');
-    }
 
     return {
       verses,
