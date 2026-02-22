@@ -184,7 +184,7 @@ We'll go step by step, and you can ask questions at any time. Are you ready to b
 Click "Start the Romans Road" when you're ready, or feel free to ask me any questions first.`;
 }
 
-export function getStepMessage(stepId: number, includeRelated: boolean = false): string {
+export async function getStepMessage(stepId: number, includeRelated: boolean = false): Promise<string> {
   const step = getRomansRoadStep(stepId);
   if (!step) return '';
 
@@ -195,9 +195,15 @@ export function getStepMessage(stepId: number, includeRelated: boolean = false):
 
   if (includeRelated && step.relatedVerses.length > 0) {
     message += `**Related Scriptures:**\n`;
-    const relatedVerses = getRelatedVerses(stepId);
-    relatedVerses.slice(0, 3).forEach(verse => {
-      message += `- **${verse.reference}**: "${verse.text}"\n`;
+    // Use parallel RAG searches to get full verse text
+    const relatedVerses = await Promise.all(
+      step.relatedVerses.slice(0, 3).map(ref => getVerseByReference(ref))
+    );
+    
+    relatedVerses.forEach(verse => {
+      if (verse) {
+        message += `- **${verse.reference}**: "${verse.text}"\n`;
+      }
     });
     message += `\n`;
   }

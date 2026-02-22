@@ -166,16 +166,29 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                 return <p key={i} className="font-bold text-gray-900 text-base">{line.replace(/\*\*/g, '')}</p>;
               }
               
-              // List items - make more compact
+              // List items - Related Scriptures with interactive cards
               if (line.startsWith('- ')) {
                 const listText = line.replace('- ', '');
                 // Extract verse reference and text
                 const match = listText.match(/\*\*(.+?)\*\*:\s*"(.+?)"/);
                 if (match) {
+                  const [_, reference, verseText] = match;
                   return (
-                    <div key={i} className="flex items-start gap-3 text-sm">
-                      <span className="text-purple-600 font-semibold min-w-fit">{match[1]}</span>
-                      <span className="text-gray-600 line-clamp-1">"{match[2]}"</span>
+                    <div key={i} className="group mb-3 animate-in slide-in-from-left duration-500" style={{ animationDelay: `${i * 100}ms` }}>
+                      <div className="relative p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-700 hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
+                            <BookOpen className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-bold text-purple-700 dark:text-purple-300 mb-1 text-sm">{reference}</div>
+                            <p className="text-base text-gray-700 dark:text-gray-200 leading-relaxed italic">"{verseText}"</p>
+                          </div>
+                        </div>
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                        </div>
+                      </div>
                     </div>
                   );
                 }

@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     if (action === 'start') {
       newState.currentStep = 1;
-      response = getStepMessage(1, true);
+      response = await getStepMessage(1, true);
     } else if (action === 'next_step') {
       const nextStep = state.currentStep + 1;
       
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
       if (nextStep <= 5) {
         newState.currentStep = nextStep;
-        response = getStepMessage(nextStep, true);
+        response = await getStepMessage(nextStep, true);
       } else {
         newState.journeyComplete = true;
         response = getCompletionMessage();
