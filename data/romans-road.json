@@ -1,0 +1,85 @@
+{
+  "steps": [
+    {
+      "id": 1,
+      "title": "All Have Sinned",
+      "verse": "Romans 3:23",
+      "text": "For all have sinned and fall short of the glory of God.",
+      "explanation": "This verse reveals a fundamental truth: every person has sinned. Sin is anything that goes against God's perfect standard. It separates us from God, who is holy and perfect. No one can claim to be without sin.",
+      "relatedVerses": [
+        "Romans 3:10-12",
+        "Isaiah 53:6",
+        "1 John 1:8",
+        "Ecclesiastes 7:20",
+        "Psalm 14:3"
+      ],
+      "prompt": "Do you understand that we all fall short of God's perfect standard? Would you like to know more about what sin means?"
+    },
+    {
+      "id": 2,
+      "title": "The Consequence of Sin",
+      "verse": "Romans 6:23",
+      "text": "For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord.",
+      "explanation": "Sin has a serious consequence: spiritual death and eternal separation from God. We've earned this penalty through our sin. But God offers a free gift—eternal life through Jesus Christ. This isn't something we can earn; it's a gift of grace.",
+      "relatedVerses": [
+        "Ezekiel 18:20",
+        "James 1:15",
+        "Genesis 2:17",
+        "Revelation 20:14-15",
+        "John 3:36"
+      ],
+      "prompt": "Do you see the seriousness of sin and its consequence? Are you ready to learn about God's amazing gift?"
+    },
+    {
+      "id": 3,
+      "title": "God's Love Demonstrated",
+      "verse": "Romans 5:8",
+      "text": "But God demonstrates his own love for us in this: While we were still sinners, Christ died for us.",
+      "explanation": "Even though we were sinners, God loved us so much that He sent Jesus Christ to die in our place. Jesus took the punishment we deserved. This is the greatest demonstration of love—Christ died for us while we were still His enemies.",
+      "relatedVerses": [
+        "John 3:16",
+        "1 John 4:9-10",
+        "Romans 5:6",
+        "Ephesians 2:4-5",
+        "1 Peter 3:18"
+      ],
+      "prompt": "Can you see how much God loves you? He sent Jesus to die for you personally. Would you like to continue?"
+    },
+    {
+      "id": 4,
+      "title": "Salvation Through Faith",
+      "verse": "Romans 10:9-10",
+      "text": "If you declare with your mouth, 'Jesus is Lord,' and believe in your heart that God raised him from the dead, you will be saved. For it is with your heart that you believe and are justified, and it is with your mouth that you profess your faith and are saved.",
+      "explanation": "Salvation comes through faith in Jesus Christ. You must believe in your heart that Jesus is Lord and that God raised Him from the dead. This isn't just head knowledge—it's a heart commitment. When you confess Jesus as Lord and believe, you are saved and made right with God.",
+      "relatedVerses": [
+        "Acts 16:31",
+        "Ephesians 2:8-9",
+        "John 1:12",
+        "Acts 4:12",
+        "John 14:6"
+      ],
+      "prompt": "Are you ready to believe in Jesus and confess Him as Lord of your life?"
+    },
+    {
+      "id": 5,
+      "title": "Call Upon the Lord",
+      "verse": "Romans 10:13",
+      "text": "For everyone who calls on the name of the Lord will be saved.",
+      "explanation": "God's promise is clear: everyone who calls on the name of the Lord will be saved. This is an invitation to you right now. You can call on Jesus, confess your sins, and receive His gift of eternal life. God is ready to save you today.",
+      "relatedVerses": [
+        "Joel 2:32",
+        "Acts 2:21",
+        "Psalm 86:5",
+        "Isaiah 55:6-7",
+        "Revelation 3:20"
+      ],
+      "prompt": "Would you like to call on the Lord right now and receive His gift of salvation? I can guide you through a prayer of faith."
+    }
+  ],
+  "sinnersPrayer": {
+    "title": "A Prayer of Salvation",
+    "introduction": "If you're ready to receive Jesus Christ as your Lord and Savior, you can pray this prayer from your heart. Remember, it's not the exact words that save you, but the faith in your heart (Romans 10:9-10).",
+    "prayer": "Dear God, I know that I am a sinner and I have fallen short of Your glory (Romans 3:23). I believe that the penalty for my sin is death, but You offer me the gift of eternal life (Romans 6:23). Thank You for demonstrating Your love by sending Jesus to die for me while I was still a sinner (Romans 5:8). I believe in my heart that Jesus is Lord and that You raised Him from the dead (Romans 10:9-10). Right now, I call upon the name of the Lord Jesus to save me (Romans 10:13). I confess Jesus as my Lord and Savior. Please forgive my sins and give me eternal life. I surrender my life to You. In Jesus' name, Amen.",
+    "afterPrayer": "If you prayed this prayer with sincere faith, the Bible promises that you are now saved! 'Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!' (2 Corinthians 5:17). Welcome to God's family!"
+  }
+}
