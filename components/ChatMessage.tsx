@@ -83,7 +83,9 @@ export function ChatMessage({ role, content, isTyping, parts }: ChatMessageProps
   const stepConfig = stepTitle ? stepIcons[stepTitle] : null;
 
   // Extract tool results from parts
+  console.log('[ChatMessage] Message parts:', parts);
   const toolResults = parts?.filter(part => part.type === 'tool-result') || [];
+  console.log('[ChatMessage] Tool results found:', toolResults);
   const hasToolResults = toolResults.length > 0;
 
   return (
