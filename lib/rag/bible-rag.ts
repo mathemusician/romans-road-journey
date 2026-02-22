@@ -136,14 +136,8 @@ class BibleRAG {
   private keywordSearch(query: string, topK: number = 10, candidateIndices?: number[]): SearchResult[] {
     const results: { index: number; score: number }[] = [];
     
-    // If candidate indices provided, only search those (pre-filtered)
-    const indicesToSearch = candidateIndices || Array.from({ length: this.verses.length }, (_, i) => i);
-    
-    // Limit to 1000 candidates max for performance
-    const searchIndices = indicesToSearch.slice(0, 1000);
-    
     this.tfidf.tfidfs(query.toLowerCase(), (i: number, measure: number) => {
-      if (searchIndices.includes(i) && measure > 0) {
+      if (measure > 0) {
         results.push({ index: i, score: measure });
       }
     });
