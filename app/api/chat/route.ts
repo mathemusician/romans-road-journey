@@ -47,22 +47,33 @@ export async function POST(req: NextRequest) {
     // Create a new ReadableStream that transforms Mastra chunks to AI SDK format
     const aiSdkStream = new ReadableStream({
       async start(controller) {
+        console.log('[STREAM] Stream started');
         const reader = streamResult.fullStream.getReader();
         
         try {
           // Stream text chunks
+          let chunkCount = 0;
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              console.log('[STREAM] Stream done, processed', chunkCount, 'chunks');
+              break;
+            }
             
             const chunk = value as any;
+            chunkCount++;
             
             // Transform Mastra text-delta chunks to AI SDK format
             if (chunk.type === 'text-delta') {
-              controller.enqueue({
-                type: 'text-delta',
-                textDelta: chunk.payload?.text || ''
-              });
+              try {
+                controller.enqueue({
+                  type: 'text-delta',
+                  textDelta: chunk.payload?.text || ''
+                });
+              } catch (enqueueError) {
+                console.error('[STREAM] Error enqueuing text-delta:', enqueueError);
+                throw enqueueError;
+              }
             }
           }
           
