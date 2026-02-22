@@ -239,14 +239,32 @@ export function ChatInterface() {
                 }));
               }
               
+              // Extract only the final response text (after last tool execution)
+              let finalText = '';
+              if (message.parts) {
+                // Find the index of the last tool part
+                let lastToolIndex = -1;
+                for (let i = message.parts.length - 1; i >= 0; i--) {
+                  if ((message.parts[i] as any).type?.startsWith('tool-')) {
+                    lastToolIndex = i;
+                    break;
+                  }
+                }
+                
+                // Get text parts after the last tool (or all text if no tools)
+                const textParts = message.parts
+                  .slice(lastToolIndex + 1)
+                  .filter(part => part.type === 'text')
+                  .map(part => (part as any).text);
+                
+                finalText = textParts.join('');
+              }
+              
               return (
                 <ChatMessage
                   key={message.id}
                   role={message.role as 'user' | 'assistant'}
-                  content={message.parts
-                    ?.filter(part => part.type === 'text')
-                    .map(part => (part as any).text)
-                    .join('') || ''}
+                  content={finalText}
                   searchResults={searchResults}
                 />
               );
