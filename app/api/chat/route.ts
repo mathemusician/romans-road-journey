@@ -55,11 +55,13 @@ export async function POST(req: NextRequest) {
       response = getPrayerGuidance();
       newState.hasAcceptedChrist = true;
     } else {
-      const searchResults = await searchBibleVerses(message, 5);
+      // Perform parallel RAG searches for comprehensive Bible context
+      const searchResults = await searchBibleVerses(message, 8);
       
       if (searchResults.length > 0) {
-        bibleContext = searchResults
-          .map(v => `${v.reference}: "${v.text}"`)
+        bibleContext = `RELEVANT BIBLE VERSES FOR "${message}":\n\n`;
+        bibleContext += searchResults
+          .map((v, i) => `${i + 1}. ${v.reference}: "${v.text}"`)
           .join('\n\n');
       }
 
@@ -68,11 +70,16 @@ export async function POST(req: NextRequest) {
         : null;
 
       if (currentStepInfo) {
-        bibleContext += `\n\nCURRENT ROMANS ROAD STEP:\n${currentStepInfo.verse}: "${currentStepInfo.text}"\n${currentStepInfo.explanation}`;
+        bibleContext += `\n\n---\nCURRENT ROMANS ROAD STEP (Step ${state.currentStep}/5):\n${currentStepInfo.verse}: "${currentStepInfo.text}"\n\nExplanation: ${currentStepInfo.explanation}`;
+      }
+
+      // Add conversation context summary
+      if (state.completedSteps.length > 0) {
+        bibleContext += `\n\n---\nCOMPLETED STEPS: ${state.completedSteps.join(', ')}`;
       }
 
       response = await generateAgentResponse(
-        conversationHistory.slice(-10),
+        conversationHistory,
         bibleContext
       );
 
