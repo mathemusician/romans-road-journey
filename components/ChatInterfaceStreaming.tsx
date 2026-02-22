@@ -170,14 +170,21 @@ export function ChatInterface() {
           {messages
             .filter(message => message.role !== 'system')
             .map((message) => {
-              // Extract tool results from data-tool-agent events
-              // Mastra's AgentStreamToAISDKTransformer emits data-tool-agent with toolResults array
+              // Extract search results from tool-bibleSearchTool parts
               let searchResults;
               
-              // Debug: Log parts array to find tool results
-              if (message.role === 'assistant' && message.parts && message.parts.length > 1) {
-                console.log('[ChatInterface] Message parts:', message.parts);
-                console.log('[ChatInterface] Part types:', message.parts.map((p: any) => p.type));
+              if (message.role === 'assistant' && message.parts) {
+                const toolParts = message.parts.filter((p: any) => p.type === 'tool-bibleSearchTool');
+                
+                if (toolParts.length > 0) {
+                  searchResults = toolParts
+                    .filter((tp: any) => tp.output) // Only include parts with output
+                    .map((tp: any) => ({
+                      query: tp.input?.query || 'Unknown query',
+                      verses: tp.output?.verses || [],
+                      count: tp.output?.count || 0
+                    }));
+                }
               }
               
               return (
