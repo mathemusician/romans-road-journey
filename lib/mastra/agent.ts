@@ -131,8 +131,15 @@ export async function generateAgentResponse(
     ...messages,
   ];
 
+  console.log('\n========== AI REQUEST ==========');
+  console.log('Conversation history messages:', messages.length);
+  console.log('Last user message:', messages[messages.length - 1]?.content?.substring(0, 100));
+  console.log('Bible context length:', context?.length || 0);
+  console.log('Bible context preview:', context?.substring(0, 200));
+  console.log('================================\n');
+
   try {
-    console.log(`Attempting with primary model: ${OPENROUTER_MODELS.primary}`);
+    console.log(`[AI] Attempting with primary model: ${OPENROUTER_MODELS.primary}`);
     const completion = await client.chat.completions.create({
       model: OPENROUTER_MODELS.primary,
       messages: messagePayload,
@@ -140,12 +147,23 @@ export async function generateAgentResponse(
       max_tokens: 1000,
     });
 
-    return completion.choices[0]?.message?.content || '';
+    const response = completion.choices[0]?.message?.content || '';
+    console.log('\n========== AI RESPONSE ==========');
+    console.log('Model used:', OPENROUTER_MODELS.primary);
+    console.log('Response length:', response.length);
+    console.log('Response preview:', response.substring(0, 300));
+    console.log('=================================\n');
+    return response;
   } catch (error: any) {
+    console.error('\n========== AI ERROR (PRIMARY) ==========');
+    console.error('Model:', OPENROUTER_MODELS.primary);
+    console.error('Error:', error.message);
+    console.error('Status:', error.status);
+    console.error('========================================\n');
     console.warn(`Primary model (${OPENROUTER_MODELS.primary}) failed, trying fallback...`, error.message);
     
     try {
-      console.log(`Attempting with fallback model: ${OPENROUTER_MODELS.fallback}`);
+      console.log(`[AI] Attempting with fallback model: ${OPENROUTER_MODELS.fallback}`);
       const completion = await client.chat.completions.create({
         model: OPENROUTER_MODELS.fallback,
         messages: messagePayload,
@@ -153,8 +171,19 @@ export async function generateAgentResponse(
         max_tokens: 1000,
       });
 
-      return completion.choices[0]?.message?.content || '';
+      const response = completion.choices[0]?.message?.content || '';
+      console.log('\n========== AI RESPONSE (FALLBACK) ==========');
+      console.log('Model used:', OPENROUTER_MODELS.fallback);
+      console.log('Response length:', response.length);
+      console.log('Response preview:', response.substring(0, 300));
+      console.log('============================================\n');
+      return response;
     } catch (fallbackError: any) {
+      console.error('\n========== AI ERROR (FALLBACK) ==========');
+      console.error('Model:', OPENROUTER_MODELS.fallback);
+      console.error('Error:', fallbackError.message);
+      console.error('Status:', fallbackError.status);
+      console.error('=========================================\n');
       console.error(`Both models failed. Primary: ${error.message}, Fallback: ${fallbackError.message}`);
       throw new Error('Unable to generate response. Please try again later.');
     }
