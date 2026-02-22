@@ -73,7 +73,7 @@ async function handleTemplateStream(action: string, state: ConversationState) {
 
         // Generate template content
         if (action === 'welcome') {
-          templateText = `Welcome! I'm your Bible research assistant. �
+          templateText = `Welcome! I'm here to help you explore God's Word.
 
 **I can help you in two ways:**
 
