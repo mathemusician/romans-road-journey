@@ -56,30 +56,30 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
 
   return (
     <div className={cn(
-      'flex w-full gap-3 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500',
+      'flex w-full gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700',
       isUser ? 'justify-end' : 'justify-start'
     )}>
       {!isUser && (
         <div className={cn(
-          "flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 hover:rotate-6 animate-in zoom-in duration-700",
+          "flex-shrink-0 w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl transition-all duration-500 hover:scale-110 hover:rotate-6 hover:shadow-3xl animate-in zoom-in duration-1000 cursor-pointer",
           stepConfig 
             ? `bg-gradient-to-br ${stepConfig.gradient}` 
             : "bg-gradient-to-br from-blue-500 to-purple-600"
         )}>
           {stepConfig ? (
-            <stepConfig.icon className="w-8 h-8 text-white animate-pulse" />
+            <stepConfig.icon className="w-10 h-10 text-white drop-shadow-lg" style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
           ) : (
-            <Sparkles className="w-7 h-7 text-white" />
+            <Sparkles className="w-9 h-9 text-white drop-shadow-lg" />
           )}
         </div>
       )}
       
       <div
         className={cn(
-          'max-w-[85%] rounded-3xl px-6 py-4 shadow-2xl backdrop-blur-sm',
+          'max-w-[85%] rounded-3xl px-8 py-6 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-3xl',
           isUser
             ? 'bg-gradient-to-br from-blue-600 to-blue-500 text-white'
-            : 'bg-white/95 dark:bg-white/95 light:bg-white text-gray-900 border border-white/20 dark:border-white/20 light:border-gray-200'
+            : 'bg-white/98 dark:bg-white/98 light:bg-white text-gray-900 border-2 border-white/30 dark:border-white/30 light:border-gray-200'
         )}
       >
         {isTyping ? (
@@ -98,16 +98,24 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                 const headingConfig = headingStepConfig ? stepIcons[headingStepConfig] : null;
                 
                 return (
-                  <div key={i} className="mb-6 animate-in slide-in-from-left duration-700">
+                  <div key={i} className="mb-8 animate-in slide-in-from-left duration-700">
                     {headingConfig && (
-                      <div className={cn(
-                        "w-24 h-24 mx-auto mb-4 rounded-3xl flex items-center justify-center shadow-2xl animate-in zoom-in-50 duration-1000 hover:scale-110 hover:rotate-12 transition-all",
-                        `bg-gradient-to-br ${headingConfig.gradient}`
-                      )}>
-                        <headingConfig.icon className="w-12 h-12 text-white animate-bounce" style={{ animationDuration: '2s' }} />
+                      <div className="relative">
+                        <div className={cn(
+                          "w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center shadow-2xl animate-in zoom-in-50 duration-1000 hover:scale-110 hover:rotate-12 transition-all cursor-pointer relative",
+                          `bg-gradient-to-br ${headingConfig.gradient}`
+                        )}>
+                          <div className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '3s' }}></div>
+                          <headingConfig.icon className="w-16 h-16 text-white drop-shadow-2xl relative z-10" style={{ animation: 'bounce 2s ease-in-out infinite' }} />
+                        </div>
+                        <div className="text-center mb-4">
+                          <span className="inline-block px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-full text-sm font-semibold text-purple-700 dark:text-purple-300">
+                            {headingConfig.symbolism}
+                          </span>
+                        </div>
                       </div>
                     )}
-                    <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent animate-in fade-in duration-1000">
+                    <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent animate-in fade-in duration-1000 mb-4">
                       {heading}
                     </h2>
                   </div>
@@ -117,8 +125,13 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               // Verse reference (###)
               if (line.startsWith('### ')) {
                 return (
-                  <div key={i} className="inline-block bg-gradient-to-r from-blue-100 to-purple-100 px-5 py-3 rounded-full mb-3 animate-in fade-in duration-500">
-                    <h3 className="text-base font-bold text-blue-900">{line.replace('### ', '')}</h3>
+                  <div key={i} className="flex items-center justify-center mb-4 animate-in fade-in duration-500">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-md opacity-30 animate-pulse"></div>
+                      <div className="relative bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 px-6 py-3 rounded-full border-2 border-blue-200 dark:border-blue-700">
+                        <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">{line.replace('### ', '')}</h3>
+                      </div>
+                    </div>
                   </div>
                 );
               }
@@ -127,15 +140,22 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               if (line.startsWith('*"') && line.endsWith('"*')) {
                 const verseStepConfig = stepConfig || { bgGradient: 'from-blue-50 to-purple-50', gradient: 'from-purple-500 to-blue-500' };
                 return (
-                  <div key={i} className={cn(
-                    "my-4 p-6 rounded-3xl border-l-4 shadow-lg animate-in slide-in-from-right duration-700 hover:scale-105 transition-transform",
-                    `bg-gradient-to-r ${verseStepConfig.bgGradient} border-${verseStepConfig.gradient.split(' ')[1]}`
-                  )} style={{ borderLeftColor: stepConfig ? undefined : '#a855f7' }}>
-                    <div className="flex items-start gap-3">
-                      <BookOpen className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1 animate-pulse" />
-                      <p className="text-xl italic font-serif text-gray-800 leading-relaxed">
-                        {line.replace(/\*/g, '')}
-                      </p>
+                  <div key={i} className="my-6 animate-in slide-in-from-right duration-700">
+                    <div className={cn(
+                      "relative p-8 rounded-3xl border-l-8 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl",
+                      `bg-gradient-to-r ${verseStepConfig.bgGradient}`
+                    )} style={{ borderLeftColor: stepConfig ? undefined : '#a855f7' }}>
+                      <div className="absolute top-4 left-4 opacity-10">
+                        <BookOpen className="w-16 h-16" />
+                      </div>
+                      <div className="flex items-start gap-4 relative z-10">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-500 flex items-center justify-center shadow-lg">
+                          <BookOpen className="w-6 h-6 text-white" />
+                        </div>
+                        <p className="text-2xl italic font-serif text-gray-800 dark:text-gray-100 leading-relaxed">
+                          {line.replace(/\*/g, '')}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 );

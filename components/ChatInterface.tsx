@@ -155,42 +155,56 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
       <div className="relative z-10 backdrop-blur-xl bg-white/10 dark:bg-white/10 border-t border-white/20 dark:border-white/20 light:bg-white/80 light:border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           {state.currentStep === 0 && !state.journeyComplete && (
-            <div className="mb-3 animate-in slide-in-from-bottom-8 fade-in duration-700">
+            <div className="mb-4 animate-in slide-in-from-bottom-8 fade-in duration-700">
               <button
                 onClick={handleStartJourney}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg hover:shadow-purple-500/50 animate-pulse"
+                className="group relative w-full min-h-[56px] bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-size-200 hover:bg-pos-100 text-white font-bold py-5 px-10 rounded-3xl transition-all duration-500 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-xl hover:shadow-purple-500/60 overflow-hidden"
+                style={{ backgroundSize: '200% 100%', backgroundPosition: '0% 0%' }}
               >
-                ✨ Begin Your Journey
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  <span className="text-2xl animate-pulse">✨</span>
+                  <span>Begin Your Journey</span>
+                  <span className="text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>✨</span>
+                </span>
               </button>
             </div>
           )}
 
           {state.currentStep > 0 && state.currentStep < 5 && !state.journeyComplete && (
-            <div className="mb-3 animate-in slide-in-from-bottom-8 fade-in duration-700">
+            <div className="mb-4 animate-in slide-in-from-bottom-8 fade-in duration-700">
               <button
                 onClick={handleNextStep}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg hover:shadow-green-500/50"
+                className="group relative w-full min-h-[56px] bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-5 px-10 rounded-3xl transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-xl hover:shadow-green-500/60"
               >
-                Continue →
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <span>Continue</span>
+                  <span className="inline-block transition-transform duration-300 group-hover:translate-x-2">→</span>
+                </span>
               </button>
             </div>
           )}
 
           {state.journeyComplete && !state.hasAcceptedChrist && (
-            <div className="mb-3 animate-in slide-in-from-bottom-8 fade-in duration-700">
+            <div className="mb-4 animate-in slide-in-from-bottom-8 fade-in duration-700">
               <button
                 onClick={handleShowPrayer}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg hover:shadow-pink-500/50 animate-pulse"
+                className="group relative w-full min-h-[56px] bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-size-200 hover:bg-pos-100 text-white font-bold py-5 px-10 rounded-3xl transition-all duration-500 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-xl hover:shadow-pink-500/60 overflow-hidden"
+                style={{ backgroundSize: '200% 100%', backgroundPosition: '0% 0%' }}
               >
-                🙏 Pray with Me
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  <span className="text-2xl" style={{ animation: 'pulse 2s ease-in-out infinite' }}>🙏</span>
+                  <span>Pray with Me</span>
+                </span>
               </button>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit} className="flex gap-3">
             <input
               ref={inputRef}
               type="text"
