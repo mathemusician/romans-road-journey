@@ -6,16 +6,9 @@ import { BookOpen, Sparkles, AlertCircle, Skull, Heart, Cross, Phone, OctagonX, 
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
-  content: string;
+  content?: string;
   isTyping?: boolean;
-  searchResults?: Array<{
-    query: string;
-    verses: Array<{
-      reference: string;
-      text: string;
-    }>;
-    count: number;
-  }>;
+  messageParts?: any[]; // Full message parts for interleaved rendering
 }
 
 // Map step titles to icons and colors based on traditional Romans Road imagery
@@ -77,20 +70,56 @@ function parseInlineMarkdown(text: string): React.ReactNode {
   return parts.length > 0 ? parts : text;
 }
 
-export function ChatMessage({ role, content, isTyping, searchResults }: ChatMessageProps) {
+export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessageProps) {
   const isUser = role === 'user';
-  const [showSearchResults, setShowSearchResults] = React.useState(false);
 
+  // For simple messages (user or legacy), use content
+  const displayContent = content || '';
+  
   // Extract verse reference if present (e.g., "Romans 3:23")
-  const verseMatch = content.match(/^(Romans|John|Acts|Ephesians|1 John|Isaiah|Ezekiel|Psalm|Ecclesiastes|James|1 Peter|2 Corinthians|Revelation|Genesis|Joel|Titus|Hebrews|Matthew|Luke|Colossians)\s+\d+:\d+/);
+  const verseMatch = displayContent.match(/^(Romans|John|Acts|Ephesians|1 John|Isaiah|Ezekiel|Psalm|Ecclesiastes|James|1 Peter|2 Corinthians|Revelation|Genesis|Joel|Titus|Hebrews|Matthew|Luke|Colossians)\s+\d+:\d+/);
   const hasVerse = verseMatch !== null;
   
   // Detect which step this is based on content
-  const stepTitle = Object.keys(stepIcons).find(title => content.includes(title));
+  const stepTitle = Object.keys(stepIcons).find(title => displayContent.includes(title));
   const stepConfig = stepTitle ? stepIcons[stepTitle] : null;
   
-  const hasSearchResults = searchResults && searchResults.length > 0;
-  const totalVerses = searchResults?.reduce((sum, result) => sum + result.count, 0) || 0;
+  // Helper to merge consecutive verses
+  const mergeConsecutiveVerses = (verses: any[]) => {
+    if (!verses || verses.length === 0) return [];
+    
+    const sorted = [...verses].sort((a, b) => {
+      if (a.book !== b.book) return a.book.localeCompare(b.book);
+      if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+      return a.verse - b.verse;
+    });
+    
+    const merged: any[] = [];
+    let current = { ...sorted[0], endVerse: sorted[0].verse };
+    
+    for (let i = 1; i < sorted.length; i++) {
+      const verse = sorted[i];
+      if (
+        verse.book === current.book &&
+        verse.chapter === current.chapter &&
+        verse.verse - current.endVerse <= 2
+      ) {
+        current.endVerse = verse.verse;
+        current.text += ' ' + verse.text;
+      } else {
+        merged.push(current);
+        current = { ...verse, endVerse: verse.verse };
+      }
+    }
+    merged.push(current);
+    
+    return merged.map((v: any) => ({
+      ...v,
+      reference: v.verse === v.endVerse 
+        ? v.reference 
+        : `${v.book} ${v.chapter}:${v.verse}-${v.endVerse}`
+    }));
+  };
 
   return (
     <div className={cn(
@@ -128,7 +157,7 @@ export function ChatMessage({ role, content, isTyping, searchResults }: ChatMess
           </div>
         ) : (
           <div className="space-y-3">
-            {content.split('\n').map((line, i) => {
+            {(content || '').split('\n').map((line, i) => {
               // Main heading (##) - Add large visual icon
               if (line.startsWith('## ')) {
                 const heading = line.replace('## ', '');
@@ -248,33 +277,36 @@ export function ChatMessage({ role, content, isTyping, searchResults }: ChatMess
           </div>
         )}
 
-        {/* Scripture Search Results Dropdown */}
-        {!isUser && hasSearchResults && (
-          <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-            <button
-              onClick={() => setShowSearchResults(!showSearchResults)}
-              className="flex items-center gap-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-            >
-              <BookOpen className="w-4 h-4" />
-              {showSearchResults ? 'Hide' : 'View'} Scripture Search Results ({searchResults!.length} {searchResults!.length === 1 ? 'search' : 'searches'}, {totalVerses} verses)
-              <span className={cn(
-                "transition-transform duration-200",
-                showSearchResults ? "rotate-180" : ""
-              )}>▼</span>
-            </button>
-
-            {showSearchResults && (
-              <div className="mt-3 space-y-4 animate-in slide-in-from-top-2 duration-300">
-                {searchResults!.map((result, idx) => (
-                  <div key={idx} className="space-y-2">
-                    <div className="text-sm font-semibold text-purple-700 dark:text-purple-300">
-                      Search {idx + 1}: "{result.query}"
+        {/* Render message parts in order with interleaved search results */}
+        {!isUser && messageParts && messageParts.length > 0 && (
+          <div className="mt-4 space-y-4">
+            {messageParts.map((part: any, idx: number) => {
+              // Render text parts
+              if (part.type === 'text') {
+                return (
+                  <div key={idx} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed">
+                    {parseInlineMarkdown(part.text)}
+                  </div>
+                );
+              }
+              
+              // Render tool search results inline
+              if (part.type === 'tool-bibleSearchTool' && part.output) {
+                const verses = part.output.verses || [];
+                const mergedVerses = mergeConsecutiveVerses(verses);
+                const query = part.input?.query || 'Unknown query';
+                
+                return (
+                  <div key={idx} className="border-l-4 border-purple-400 pl-4 py-2 bg-purple-50/50 dark:bg-purple-900/10 rounded-r-lg">
+                    <div className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" />
+                      Search: "{query}"
                     </div>
                     <div className="space-y-2">
-                      {result.verses.map((verse, vIdx) => (
+                      {mergedVerses.map((verse: any, vIdx: number) => (
                         <div 
                           key={vIdx}
-                          className="p-3 rounded-lg bg-purple-50 dark:bg-gray-800 border border-purple-200 dark:border-gray-700"
+                          className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-purple-200 dark:border-gray-700"
                         >
                           <div className="font-semibold text-purple-700 dark:text-purple-300 text-sm mb-1">
                             {verse.reference}
@@ -286,9 +318,11 @@ export function ChatMessage({ role, content, isTyping, searchResults }: ChatMess
                       ))}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              }
+              
+              return null;
+            })}
           </div>
         )}
       </div>

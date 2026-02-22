@@ -170,92 +170,26 @@ export function ChatInterface() {
           {messages
             .filter(message => message.role !== 'system')
             .map((message) => {
-              // Extract search results from tool-bibleSearchTool parts
-              let searchResults;
-              
-              if (message.role === 'assistant' && message.parts) {
-                const toolParts = message.parts.filter((p: any) => p.type === 'tool-bibleSearchTool');
-                
-                if (toolParts.length > 0) {
-                  searchResults = toolParts
-                    .filter((tp: any) => tp.output) // Only include parts with output
-                    .map((tp: any) => {
-                      const verses = tp.output?.verses || [];
-                      
-                      // Merge verses that are 1-2 verses apart
-                      const mergedVerses = mergeConsecutiveVerses(verses);
-                      
-                      return {
-                        query: tp.input?.query || 'Unknown query',
-                        verses: mergedVerses,
-                        count: mergedVerses.length
-                      };
-                    });
-                }
+              // For user messages or messages without parts, use simple content
+              if (message.role === 'user' || !message.parts) {
+                return (
+                  <ChatMessage
+                    key={message.id}
+                    role={message.role as 'user' | 'assistant'}
+                    content={message.parts
+                      ?.filter(part => part.type === 'text')
+                      .map(part => (part as any).text)
+                      .join('') || ''}
+                  />
+                );
               }
               
-              // Helper function to merge consecutive verses
-              function mergeConsecutiveVerses(verses: any[]) {
-                if (!verses || verses.length === 0) return [];
-                
-                // Sort verses by book, chapter, verse
-                const sorted = [...verses].sort((a, b) => {
-                  if (a.book !== b.book) return a.book.localeCompare(b.book);
-                  if (a.chapter !== b.chapter) return a.chapter - b.chapter;
-                  return a.verse - b.verse;
-                });
-                
-                const merged: any[] = [];
-                let current = { ...sorted[0], endVerse: sorted[0].verse };
-                
-                for (let i = 1; i < sorted.length; i++) {
-                  const verse = sorted[i];
-                  
-                  // Check if this verse is within 1-2 verses of the current group
-                  if (
-                    verse.book === current.book &&
-                    verse.chapter === current.chapter &&
-                    verse.verse - current.endVerse <= 2
-                  ) {
-                    // Merge: extend the range and append text
-                    current.endVerse = verse.verse;
-                    current.text += ' ' + verse.text;
-                  } else {
-                    // Save current group and start new one
-                    merged.push(current);
-                    current = { ...verse, endVerse: verse.verse };
-                  }
-                }
-                
-                // Add the last group
-                merged.push(current);
-                
-                // Update references to show ranges
-                return merged.map((v: any) => ({
-                  ...v,
-                  reference: v.verse === v.endVerse 
-                    ? v.reference 
-                    : `${v.book} ${v.chapter}:${v.verse}-${v.endVerse}`
-                }));
-              }
-              
-              // Extract all text parts with proper spacing
-              let finalText = '';
-              if (message.parts) {
-                const textParts = message.parts
-                  .filter(part => part.type === 'text')
-                  .map(part => (part as any).text);
-                
-                // Join with double newlines for proper paragraph spacing
-                finalText = textParts.join('\n\n');
-              }
-              
+              // For assistant messages with parts, pass parts for interleaved rendering
               return (
                 <ChatMessage
                   key={message.id}
                   role={message.role as 'user' | 'assistant'}
-                  content={finalText}
-                  searchResults={searchResults}
+                  messageParts={message.parts}
                 />
               );
             })}
