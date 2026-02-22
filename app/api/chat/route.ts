@@ -55,14 +55,23 @@ export async function POST(req: NextRequest) {
       response = getPrayerGuidance();
       newState.hasAcceptedChrist = true;
     } else {
-      // Perform parallel RAG searches for comprehensive Bible context
-      const searchResults = await searchBibleVerses(message, 8);
+      // Detect if user is asking about a specific topic
+      const topicKeywords = ['money', 'wealth', 'rich', 'poor', 'prayer', 'heaven', 'hell', 'love', 'faith', 'sin', 'forgiveness', 'grace', 'salvation', 'obey', 'obedience'];
+      const detectedTopic = topicKeywords.find(topic => message.toLowerCase().includes(topic));
+      
+      // Use topic search if detected, otherwise use hybrid search
+      const searchResults = detectedTopic 
+        ? await import('@/lib/mastra/agent').then(m => m.searchByTopic(detectedTopic, 8))
+        : await searchBibleVerses(message, 8);
       
       if (searchResults.length > 0) {
         bibleContext = `RELEVANT BIBLE VERSES FOR "${message}":\n\n`;
         bibleContext += searchResults
           .map((v, i) => `${i + 1}. ${v.reference}: "${v.text}"`)
           .join('\n\n');
+      } else {
+        // If no results, provide a helpful message
+        bibleContext = `No specific verses found for "${message}". Please use the general biblical knowledge to answer.`;
       }
 
       const currentStepInfo = state.currentStep > 0 

@@ -51,7 +51,9 @@ class BibleRAG {
     const importantWords = [
       'sin', 'sinned', 'death', 'life', 'eternal', 'saved', 'salvation', 'believe', 'faith',
       'jesus', 'christ', 'lord', 'god', 'love', 'grace', 'mercy', 'forgiveness', 'righteous',
-      'righteousness', 'justified', 'confess', 'repent', 'born', 'again', 'spirit', 'holy'
+      'righteousness', 'justified', 'confess', 'repent', 'born', 'again', 'spirit', 'holy',
+      'money', 'wealth', 'riches', 'treasure', 'poor', 'rich', 'give', 'giving', 'tithe',
+      'heaven', 'hell', 'prayer', 'pray', 'worship', 'obey', 'obedience', 'truth', 'word'
     ];
 
     tokens.forEach((token, idx) => {
@@ -218,7 +220,14 @@ class BibleRAG {
       'eternal life': 'eternal life everlasting heaven',
       'death': 'death die perish destruction',
       'jesus': 'jesus christ lord savior messiah',
-      'repentance': 'repent repentance turn away forsake'
+      'repentance': 'repent repentance turn away forsake',
+      'money': 'money wealth riches treasure mammon silver gold',
+      'wealth': 'wealth riches treasure possessions money',
+      'poor': 'poor poverty needy humble meek',
+      'prayer': 'pray prayer praying ask petition',
+      'heaven': 'heaven heavenly paradise eternal glory',
+      'hell': 'hell hades destruction perish fire',
+      'obedience': 'obey obedience keep commandments follow'
     };
 
     const query = topicQueries[topic.toLowerCase()] || topic;
