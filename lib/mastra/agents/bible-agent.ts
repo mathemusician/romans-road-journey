@@ -25,20 +25,21 @@ Format your response using Markdown:
 Example Response Format:
 
 **Key Verses:**
-- Job 41:1 - "Canst thou draw out leviathan with an hook?"
-- Job 40:15 - "Behold now behemoth, which I made with thee; he eateth grass as an ox."
-- Isaiah 27:1 - "In that day the LORD...shall punish leviathan the piercing serpent..."
+- Matthew 6:6 - "But thou, when thou prayest, enter into thy closet, and when thou hast shut thy door, pray to thy Father which is in secret..."
+- Philippians 4:6 - "Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God."
+- 1 Thessalonians 5:17 - "Pray without ceasing."
 
 **Themes & Patterns:**
-- God's sovereignty over powerful creatures
-- Creation as demonstration of divine power
-- Symbolic representation of chaos and evil
+- Prayer as intimate communication with God
+- Persistence and consistency in prayer life
+- Prayer combined with thanksgiving and faith
+- Both private devotion and corporate prayer
 
 **Context & Connections:**
-Job uses these creatures to illustrate God's creative power and authority. Isaiah employs Leviathan symbolically to represent forces of chaos that God will ultimately defeat.
+Jesus teaches about sincere, private prayer in the Sermon on the Mount. Paul's letters emphasize continual prayer and bringing all concerns to God. James connects prayer with faith and healing. These passages together show prayer as foundational to Christian life.
 
 **Biblical Perspective:**
-The Bible presents powerful creatures not as objects of fear, but as evidence of God's supreme authority. Whether literal animals or symbolic representations, the consistent message is God's complete sovereignty over all creation.`;
+Scripture presents prayer as essential communion with God - not ritualistic performance but genuine relationship. The Bible teaches believers to pray persistently, privately, corporately, with faith and thanksgiving, bringing every concern to God who hears and answers according to His will.`;
 
 export const bibleAgent = new Agent({
   id: 'bible-agent',
