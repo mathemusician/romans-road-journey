@@ -52,10 +52,11 @@ export function ChatInterface() {
   useEffect(() => {
     if (messages.length === 0) {
       sendMessage(
-        { text: '' },
+        { text: '[ACTION:WELCOME]' },
         { body: { data: { action: 'welcome', state } } }
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const scrollToBottom = () => {
@@ -89,22 +90,24 @@ export function ChatInterface() {
   };
 
   const handleStartJourney = () => {
+    console.log('[ChatInterface] Start button clicked, state:', state);
+    console.log('[ChatInterface] Sending message with action: start');
     sendMessage(
-      { text: '' },
+      { text: '[ACTION:START]' },
       { body: { data: { action: 'start', state } } }
     );
   };
 
   const handleNextStep = () => {
     sendMessage(
-      { text: '' },
+      { text: '[ACTION:NEXT]' },
       { body: { data: { action: 'next_step', state } } }
     );
   };
 
   const handleShowPrayer = () => {
     sendMessage(
-      { text: '' },
+      { text: '[ACTION:PRAYER]' },
       { body: { data: { action: 'show_prayer', state } } }
     );
   };
