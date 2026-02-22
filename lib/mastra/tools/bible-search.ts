@@ -40,13 +40,29 @@ export const bibleSearchTool = createTool({
     
     if (context?.writer) {
       console.log('[Bible Search Tool] Emitting custom event...');
-      context.writer.write({
-        type: 'bible-search-result',
-        query,
-        verses,
-        count: verses.length,
-      });
-      console.log('[Bible Search Tool] Event emitted');
+      try {
+        // Try custom() method for UI-level events
+        if (typeof context.writer.custom === 'function') {
+          context.writer.custom({
+            type: 'bible-search-result',
+            query,
+            verses,
+            count: verses.length,
+          });
+          console.log('[Bible Search Tool] Event emitted via custom()');
+        } else {
+          // Fallback to write()
+          context.writer.write({
+            type: 'bible-search-result',
+            query,
+            verses,
+            count: verses.length,
+          });
+          console.log('[Bible Search Tool] Event emitted via write()');
+        }
+      } catch (error) {
+        console.error('[Bible Search Tool] Error emitting event:', error);
+      }
     } else {
       console.log('[Bible Search Tool] WARNING: No writer available, cannot emit event');
     }
