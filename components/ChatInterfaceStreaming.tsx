@@ -42,7 +42,9 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { messages, sendMessage, status, stop } = useChat({
+  const [isLoadingAction, setIsLoadingAction] = useState(false);
+  
+  const { messages, sendMessage, status, stop, setMessages } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
     }),
@@ -51,10 +53,7 @@ export function ChatInterface() {
   // Add welcome message on mount
   useEffect(() => {
     if (messages.length === 0) {
-      sendMessage(
-        { text: '[ACTION:WELCOME]' },
-        { body: { data: { action: 'welcome', state } } }
-      );
+      handleAction('welcome');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -78,6 +77,70 @@ export function ChatInterface() {
     });
   }, [messages]);
 
+  // Handle template actions via direct API call (not through chat)
+  const handleAction = async (action: string) => {
+    setIsLoadingAction(true);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [],
+          data: { action, state },
+        }),
+      });
+
+      if (!response.ok) throw new Error('Action failed');
+
+      // Read the streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let assistantMessage = '';
+
+      while (reader) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.trim() || line.startsWith(':')) continue;
+          
+          try {
+            const data = JSON.parse(line.replace(/^data: /, ''));
+            
+            if (data.type === 'text-delta') {
+              assistantMessage += data.delta;
+            } else if (data.type === 'data-romans-road-state') {
+              setState(data.data);
+            }
+          } catch (e) {
+            // Skip invalid JSON
+          }
+        }
+      }
+
+      // Add the assistant message to chat
+      if (assistantMessage) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            parts: [{ type: 'text', text: assistantMessage }],
+          } as any,
+        ]);
+      }
+    } catch (error) {
+      console.error('Action error:', error);
+    } finally {
+      setIsLoadingAction(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || status !== 'ready') return;
@@ -89,30 +152,11 @@ export function ChatInterface() {
     setInput('');
   };
 
-  const handleStartJourney = () => {
-    console.log('[ChatInterface] Start button clicked, state:', state);
-    console.log('[ChatInterface] Sending message with action: start');
-    sendMessage(
-      { text: '[ACTION:START]' },
-      { body: { data: { action: 'start', state } } }
-    );
-  };
+  const handleStartJourney = () => handleAction('start');
+  const handleNextStep = () => handleAction('next_step');
+  const handleShowPrayer = () => handleAction('show_prayer');
 
-  const handleNextStep = () => {
-    sendMessage(
-      { text: '[ACTION:NEXT]' },
-      { body: { data: { action: 'next_step', state } } }
-    );
-  };
-
-  const handleShowPrayer = () => {
-    sendMessage(
-      { text: '[ACTION:PRAYER]' },
-      { body: { data: { action: 'show_prayer', state } } }
-    );
-  };
-
-  const isStreaming = status === 'streaming' || status === 'submitted';
+  const isStreaming = status === 'streaming' || status === 'submitted' || isLoadingAction;
 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900">
@@ -140,7 +184,9 @@ export function ChatInterface() {
           {isStreaming && (
             <div className="flex items-center gap-2 text-white/60 text-sm">
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>{status === 'submitted' ? 'Thinking...' : 'Responding...'}</span>
+              <span>
+                {isLoadingAction ? 'Loading...' : status === 'submitted' ? 'Thinking...' : 'Responding...'}
+              </span>
             </div>
           )}
 
