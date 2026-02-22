@@ -30,7 +30,7 @@ export const bibleAgent = new Agent({
   id: 'bible-agent',
   name: 'Bible Teacher',
   instructions: SYSTEM_INSTRUCTIONS,
-  model: 'anthropic/claude-3.5-sonnet',
+  model: 'openrouter/anthropic/claude-3.5-sonnet',
   tools: {
     bibleSearchTool,
   },
