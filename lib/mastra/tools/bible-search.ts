@@ -35,13 +35,20 @@ export const bibleSearchTool = createTool({
     console.log('[Bible Search Tool] Found', verses.length, 'verses');
 
     // Emit custom event with search results so they appear in the stream
+    console.log('[Bible Search Tool] Context:', context ? 'exists' : 'undefined');
+    console.log('[Bible Search Tool] Writer:', context?.writer ? 'exists' : 'undefined');
+    
     if (context?.writer) {
+      console.log('[Bible Search Tool] Emitting custom event...');
       context.writer.write({
         type: 'bible-search-result',
         query,
         verses,
         count: verses.length,
       });
+      console.log('[Bible Search Tool] Event emitted');
+    } else {
+      console.log('[Bible Search Tool] WARNING: No writer available, cannot emit event');
     }
 
     return {
