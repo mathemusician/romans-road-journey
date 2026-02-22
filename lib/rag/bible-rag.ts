@@ -184,12 +184,17 @@ class BibleRAG {
       await this.initialize();
     }
 
+    console.log(`[RAG] Starting hybrid search for: "${query}"`);
+    console.log(`[RAG] Expanded terms:`, expandedTerms);
+
     // Run 3 parallel searches (all terms searched in parallel within each type)
     const [semanticResults, keywordResults, expandedResults] = await Promise.all([
       Promise.resolve(this.semanticSearch(query, topK * 2, 0.3)),
       Promise.resolve(this.keywordSearch(query, topK * 2)),
       this.expandedSearch(query, topK * 2, expandedTerms),
     ]);
+
+    console.log(`[RAG] Search results - Semantic: ${semanticResults.length}, Keyword: ${keywordResults.length}, Expanded: ${expandedResults.length}`);
 
     const combinedMap = new Map<string, SearchResult>();
 
@@ -240,28 +245,40 @@ class BibleRAG {
     try {
       // If no expanded terms provided, just return empty (will be provided by API)
       if (!expandedTerms || expandedTerms.length === 0) {
+        console.log('[RAG] No expanded terms provided for expanded search');
         return [];
       }
       
-      // Search ALL expanded terms in PARALLEL
+      console.log(`[RAG] Expanded search with ${expandedTerms.length} terms:`, expandedTerms);
+      
+      // Search ALL expanded terms in PARALLEL (get more results per term)
       const searchPromises = expandedTerms.map(term => 
-        Promise.resolve(this.keywordSearch(term, 5))
+        Promise.resolve(this.keywordSearch(term, 10))
       );
       
       const allResultArrays = await Promise.all(searchPromises);
       const allResults = allResultArrays.flat();
+      
+      console.log(`[RAG] Expanded search found ${allResults.length} total results before dedup`);
 
-      // Deduplicate and return top results
+      // Deduplicate and boost scores for multiple matches
       const uniqueMap = new Map<string, SearchResult>();
       allResults.forEach(result => {
         const key = result.verse.reference;
-        if (!uniqueMap.has(key) || uniqueMap.get(key)!.score < result.score) {
+        const existing = uniqueMap.get(key);
+        if (!existing) {
           uniqueMap.set(key, result);
+        } else {
+          // Boost score if verse matches multiple terms
+          existing.score += result.score * 0.5;
         }
       });
 
       const results = Array.from(uniqueMap.values());
       results.sort((a, b) => b.score - a.score);
+      
+      console.log(`[RAG] Expanded search top 5 results:`, results.slice(0, 5).map(r => ({ ref: r.verse.reference, score: r.score })));
+      
       return results.slice(0, topK);
     } catch (error) {
       console.error('Expanded search failed:', error);
