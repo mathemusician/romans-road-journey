@@ -182,7 +182,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                           </div>
                           <div className="flex-1">
                             <div className="font-bold text-purple-700 dark:text-purple-300 mb-1 text-sm">{reference}</div>
-                            <p className="text-base text-gray-700 dark:text-gray-200 leading-relaxed italic">"{verseText}"</p>
+                            <p className="text-base text-gray-700 dark:text-white leading-relaxed italic">"{verseText}"</p>
                           </div>
                         </div>
                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
