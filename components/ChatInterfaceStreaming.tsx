@@ -153,8 +153,13 @@ export function ChatInterface() {
   const isStreaming = status === 'streaming' || status === 'submitted' || isLoadingAction;
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-purple-500 via-blue-500 to-purple-600 dark:from-purple-900 dark:via-blue-900 dark:to-purple-900">
-      <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-purple-500 via-blue-500 to-purple-600 dark:from-purple-900 dark:via-blue-900 dark:to-purple-900 relative overflow-hidden">
+      {/* Animated background blobs */}
+      <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 dark:bg-purple-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-70 animate-blob"></div>
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-300 dark:bg-blue-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 dark:bg-pink-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
+      
+      <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6 relative z-10">
         {state.currentStep > 0 && (
           <div className="max-w-4xl mx-auto mb-6">
             <ProgressBar currentStep={state.currentStep} totalSteps={5} />
