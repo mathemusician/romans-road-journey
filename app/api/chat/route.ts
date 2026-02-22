@@ -59,27 +59,28 @@ export async function POST(req: NextRequest) {
             
             // Transform Mastra chunks to AI SDK format
             if (chunk.type === 'text-delta') {
+              // Text is in payload.text, not delta
               controller.enqueue({
                 type: 'text-delta',
-                textDelta: chunk.delta
+                textDelta: chunk.payload?.text || ''
               });
             } else if (chunk.type === 'tool-result') {
               console.log('[STREAM] Tool result detected!', chunk);
               // Pass through tool results
               controller.enqueue({
                 type: 'tool-result',
-                toolCallId: chunk.toolCallId,
-                toolName: chunk.toolName,
-                result: chunk.result
+                toolCallId: chunk.payload?.toolCallId,
+                toolName: chunk.payload?.toolName,
+                result: chunk.payload?.result
               });
             } else if (chunk.type === 'tool-call') {
               console.log('[STREAM] Tool call detected!', chunk);
               // Pass through tool calls
               controller.enqueue({
                 type: 'tool-call',
-                toolCallId: chunk.toolCallId,
-                toolName: chunk.toolName,
-                args: chunk.args
+                toolCallId: chunk.payload?.toolCallId,
+                toolName: chunk.payload?.toolName,
+                args: chunk.payload?.args
               });
             } else {
               console.log('[STREAM] Unknown chunk type:', chunk.type);
