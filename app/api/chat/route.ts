@@ -37,7 +37,9 @@ export async function POST(req: NextRequest) {
     let newState = { ...state };
     let bibleContext = '';
 
+    // Templates - no AI needed, just return the content directly
     if (action === 'start') {
+      console.log('[API] Returning template for step 1');
       newState.currentStep = 1;
       response = await getStepMessage(1, true);
     } else if (action === 'next_step') {
@@ -48,16 +50,20 @@ export async function POST(req: NextRequest) {
       }
 
       if (nextStep <= 5) {
+        console.log('[API] Returning template for step', nextStep);
         newState.currentStep = nextStep;
         response = await getStepMessage(nextStep, true);
       } else {
+        console.log('[API] Returning completion template');
         newState.journeyComplete = true;
         response = getCompletionMessage();
       }
     } else if (action === 'show_prayer') {
+      console.log('[API] Returning prayer template');
       response = getPrayerGuidance();
       newState.hasAcceptedChrist = true;
     } else {
+      // ONLY use AI for user questions - not templates!
       // Detect if user is asking about a specific topic
       const topicKeywords = ['money', 'wealth', 'rich', 'poor', 'prayer', 'heaven', 'hell', 'love', 'faith', 'sin', 'forgiveness', 'grace', 'salvation', 'obey', 'obedience'];
       const detectedTopic = topicKeywords.find(topic => message.toLowerCase().includes(topic));
