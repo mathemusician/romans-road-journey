@@ -170,9 +170,25 @@ export function ChatInterface() {
           {messages
             .filter(message => message.role !== 'system')
             .map((message) => {
-              // Extract search results from message data/annotations
-              const searchResults = (message as any).data?.searchResults || 
-                                   (message as any).annotations?.find((a: any) => a.searchResults)?.searchResults;
+              // Extract tool results from data-tool-agent events
+              // Mastra's AgentStreamToAISDKTransformer emits data-tool-agent with toolResults array
+              let searchResults;
+              
+              // Check for data-tool-agent in annotations
+              const toolAgentData = (message as any).annotations?.find((a: any) => a.type === 'data-tool-agent');
+              if (toolAgentData?.data?.toolResults) {
+                // Transform toolResults to searchResults format
+                searchResults = toolAgentData.data.toolResults
+                  .filter((tr: any) => tr.payload?.toolName === 'search-bible')
+                  .map((tr: any) => {
+                    const result = tr.payload?.result || {};
+                    return {
+                      query: tr.payload?.args?.query || 'Unknown query',
+                      verses: result.verses || [],
+                      count: result.count || 0
+                    };
+                  });
+              }
               
               return (
                 <ChatMessage
