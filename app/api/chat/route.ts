@@ -40,12 +40,56 @@ export async function POST(req: NextRequest) {
     // Handle user questions with Mastra agent streaming
     console.log('[STREAM API] Streaming agent response');
     
-    // Get the agent and use fullStream to include tool events
+    // Get the agent
     const agent = mastra.getAgent('bibleAgent');
     const streamResult = await agent.stream(messages);
     
-    // Cast to any to bypass TypeScript stream type incompatibility
-    return createUIMessageStreamResponse({ stream: streamResult.fullStream as any });
+    // Create a new ReadableStream that transforms Mastra chunks to AI SDK format
+    const aiSdkStream = new ReadableStream({
+      async start(controller) {
+        const reader = streamResult.fullStream.getReader();
+        
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = value as any;
+            
+            // Transform Mastra chunks to AI SDK format
+            if (chunk.type === 'text-delta') {
+              controller.enqueue({
+                type: 'text-delta',
+                textDelta: chunk.delta
+              });
+            } else if (chunk.type === 'tool-result') {
+              // Pass through tool results
+              controller.enqueue({
+                type: 'tool-result',
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                result: chunk.result
+              });
+            } else if (chunk.type === 'tool-call') {
+              // Pass through tool calls
+              controller.enqueue({
+                type: 'tool-call',
+                toolCallId: chunk.toolCallId,
+                toolName: chunk.toolName,
+                args: chunk.args
+              });
+            }
+          }
+        } catch (error) {
+          controller.error(error);
+        } finally {
+          reader.releaseLock();
+          controller.close();
+        }
+      }
+    });
+    
+    return createUIMessageStreamResponse({ stream: aiSdkStream as any });
   } catch (error) {
     console.error('[STREAM API] Error:', error);
     return new Response(
