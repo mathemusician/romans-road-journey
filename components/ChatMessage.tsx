@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Sparkles } from 'lucide-react';
+import { BookOpen, Sparkles, AlertCircle, Skull, Heart, Cross, Phone } from 'lucide-react';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -9,18 +9,63 @@ interface ChatMessageProps {
   isTyping?: boolean;
 }
 
+// Map step titles to icons and colors
+const stepIcons: Record<string, { icon: any; gradient: string; bgGradient: string }> = {
+  'All Have Sinned': { 
+    icon: AlertCircle, 
+    gradient: 'from-red-500 to-orange-500',
+    bgGradient: 'from-red-50 to-orange-50'
+  },
+  'The Consequence of Sin': { 
+    icon: Skull, 
+    gradient: 'from-gray-700 to-gray-900',
+    bgGradient: 'from-gray-100 to-gray-200'
+  },
+  "God's Love Demonstrated": { 
+    icon: Heart, 
+    gradient: 'from-pink-500 to-rose-600',
+    bgGradient: 'from-pink-50 to-rose-50'
+  },
+  'Salvation Through Faith': { 
+    icon: Cross, 
+    gradient: 'from-blue-500 to-indigo-600',
+    bgGradient: 'from-blue-50 to-indigo-50'
+  },
+  'Call Upon the Lord': { 
+    icon: Phone, 
+    gradient: 'from-green-500 to-emerald-600',
+    bgGradient: 'from-green-50 to-emerald-50'
+  }
+};
+
 export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
   const isUser = role === 'user';
 
   // Extract verse reference if present (e.g., "Romans 3:23")
   const verseMatch = content.match(/^(Romans|John|Acts|Ephesians|1 John|Isaiah|Ezekiel|Psalm|Ecclesiastes|James|1 Peter|2 Corinthians|Revelation|Genesis|Joel|Titus|Hebrews|Matthew|Luke|Colossians)\s+\d+:\d+/);
   const hasVerse = verseMatch !== null;
+  
+  // Detect which step this is based on content
+  const stepTitle = Object.keys(stepIcons).find(title => content.includes(title));
+  const stepConfig = stepTitle ? stepIcons[stepTitle] : null;
 
   return (
-    <div className={cn('flex w-full gap-3 mb-6', isUser ? 'justify-end' : 'justify-start')}>
+    <div className={cn(
+      'flex w-full gap-3 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500',
+      isUser ? 'justify-end' : 'justify-start'
+    )}>
       {!isUser && (
-        <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-          <Sparkles className="w-6 h-6 text-white" />
+        <div className={cn(
+          "flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 hover:rotate-6 animate-in zoom-in duration-700",
+          stepConfig 
+            ? `bg-gradient-to-br ${stepConfig.gradient}` 
+            : "bg-gradient-to-br from-blue-500 to-purple-600"
+        )}>
+          {stepConfig ? (
+            <stepConfig.icon className="w-8 h-8 text-white animate-pulse" />
+          ) : (
+            <Sparkles className="w-7 h-7 text-white" />
+          )}
         </div>
       )}
       
@@ -41,12 +86,24 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
         ) : (
           <div className="space-y-3">
             {content.split('\n').map((line, i) => {
-              // Main heading (##)
+              // Main heading (##) - Add large visual icon
               if (line.startsWith('## ')) {
+                const heading = line.replace('## ', '');
+                const headingStepConfig = Object.keys(stepIcons).find(title => heading.includes(title));
+                const headingConfig = headingStepConfig ? stepIcons[headingStepConfig] : null;
+                
                 return (
-                  <div key={i} className="mb-4">
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                      {line.replace('## ', '')}
+                  <div key={i} className="mb-6 animate-in slide-in-from-left duration-700">
+                    {headingConfig && (
+                      <div className={cn(
+                        "w-24 h-24 mx-auto mb-4 rounded-3xl flex items-center justify-center shadow-2xl animate-in zoom-in-50 duration-1000 hover:scale-110 hover:rotate-12 transition-all",
+                        `bg-gradient-to-br ${headingConfig.gradient}`
+                      )}>
+                        <headingConfig.icon className="w-12 h-12 text-white animate-bounce" style={{ animationDuration: '2s' }} />
+                      </div>
+                    )}
+                    <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent animate-in fade-in duration-1000">
+                      {heading}
                     </h2>
                   </div>
                 );
@@ -61,13 +118,20 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                 );
               }
               
-              // Quoted verse text
+              // Quoted verse text - Enhanced with animation and visual appeal
               if (line.startsWith('*"') && line.endsWith('"*')) {
+                const verseStepConfig = stepConfig || { bgGradient: 'from-blue-50 to-purple-50', gradient: 'from-purple-500 to-blue-500' };
                 return (
-                  <div key={i} className="my-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border-l-4 border-purple-500">
-                    <p className="text-lg italic font-serif text-gray-800 leading-relaxed">
-                      {line.replace(/\*/g, '')}
-                    </p>
+                  <div key={i} className={cn(
+                    "my-4 p-6 rounded-3xl border-l-4 shadow-lg animate-in slide-in-from-right duration-700 hover:scale-105 transition-transform",
+                    `bg-gradient-to-r ${verseStepConfig.bgGradient} border-${verseStepConfig.gradient.split(' ')[1]}`
+                  )} style={{ borderLeftColor: stepConfig ? undefined : '#a855f7' }}>
+                    <div className="flex items-start gap-3">
+                      <BookOpen className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1 animate-pulse" />
+                      <p className="text-xl italic font-serif text-gray-800 leading-relaxed">
+                        {line.replace(/\*/g, '')}
+                      </p>
+                    </div>
                   </div>
                 );
               }

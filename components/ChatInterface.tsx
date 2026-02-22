@@ -136,28 +136,30 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto relative z-10">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          {messages.map((message, index) => (
-            <ChatMessage
-              key={index}
-              role={message.role}
-              content={message.content}
-            />
-          ))}
-          {isLoading && <ChatMessage role="assistant" content="" isTyping />}
-          <div ref={messagesEndRef} />
+      <div className="flex-1 overflow-y-auto relative z-10 pt-6">
+        <div className="max-w-4xl mx-auto px-4 pb-6 min-h-full flex flex-col justify-end">
+          <div className="space-y-4">
+            {messages.map((message, index) => (
+              <ChatMessage
+                key={index}
+                role={message.role}
+                content={message.content}
+              />
+            ))}
+            {isLoading && <ChatMessage role="assistant" content="" isTyping />}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       </div>
 
       <div className="relative z-10 backdrop-blur-xl bg-white/10 dark:bg-white/10 border-t border-white/20 dark:border-white/20 light:bg-white/80 light:border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           {state.currentStep === 0 && !state.journeyComplete && (
-            <div className="mb-3">
+            <div className="mb-3 animate-in slide-in-from-bottom-8 fade-in duration-700">
               <button
                 onClick={handleStartJourney}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg hover:shadow-purple-500/50 animate-pulse"
               >
                 ✨ Begin Your Journey
               </button>
@@ -165,11 +167,11 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
           )}
 
           {state.currentStep > 0 && state.currentStep < 5 && !state.journeyComplete && (
-            <div className="mb-3">
+            <div className="mb-3 animate-in slide-in-from-bottom-8 fade-in duration-700">
               <button
                 onClick={handleNextStep}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg hover:shadow-green-500/50"
               >
                 Continue →
               </button>
@@ -177,11 +179,11 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
           )}
 
           {state.journeyComplete && !state.hasAcceptedChrist && (
-            <div className="mb-3">
+            <div className="mb-3 animate-in slide-in-from-bottom-8 fade-in duration-700">
               <button
                 onClick={handleShowPrayer}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-2xl transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl text-lg hover:shadow-pink-500/50 animate-pulse"
               >
                 🙏 Pray with Me
               </button>
