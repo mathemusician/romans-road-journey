@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   generateAgentResponse,
   searchBibleVerses,
+  searchByTopic,
   getRomansRoadStep,
   getStepMessage,
   getWelcomeMessage,
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       
       // Use topic search if detected, otherwise use hybrid search
       const searchResults = detectedTopic 
-        ? await import('@/lib/mastra/agent').then(m => m.searchByTopic(detectedTopic, 8))
+        ? await searchByTopic(detectedTopic, 8)
         : await searchBibleVerses(message, 8);
       
       if (searchResults.length > 0) {
