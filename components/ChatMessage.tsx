@@ -8,6 +8,7 @@ interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
   isTyping?: boolean;
+  parts?: any[]; // Full message parts including tool calls/results
 }
 
 // Map step titles to icons and colors based on traditional Romans Road imagery
@@ -69,8 +70,9 @@ function parseInlineMarkdown(text: string): React.ReactNode {
   return parts.length > 0 ? parts : text;
 }
 
-export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
+export function ChatMessage({ role, content, isTyping, parts }: ChatMessageProps) {
   const isUser = role === 'user';
+  const [showToolResults, setShowToolResults] = React.useState(false);
 
   // Extract verse reference if present (e.g., "Romans 3:23")
   const verseMatch = content.match(/^(Romans|John|Acts|Ephesians|1 John|Isaiah|Ezekiel|Psalm|Ecclesiastes|James|1 Peter|2 Corinthians|Revelation|Genesis|Joel|Titus|Hebrews|Matthew|Luke|Colossians)\s+\d+:\d+/);
@@ -79,6 +81,10 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
   // Detect which step this is based on content
   const stepTitle = Object.keys(stepIcons).find(title => content.includes(title));
   const stepConfig = stepTitle ? stepIcons[stepTitle] : null;
+
+  // Extract tool results from parts
+  const toolResults = parts?.filter(part => part.type === 'tool-result') || [];
+  const hasToolResults = toolResults.length > 0;
 
   return (
     <div className={cn(
@@ -233,6 +239,57 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               
               return null;
             })}
+          </div>
+        )}
+
+        {/* Tool Results - Scripture Search Results */}
+        {!isUser && hasToolResults && (
+          <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <button
+              onClick={() => setShowToolResults(!showToolResults)}
+              className="flex items-center gap-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+            >
+              <BookOpen className="w-4 h-4" />
+              {showToolResults ? 'Hide' : 'View'} Scripture Search Results ({toolResults.length})
+              <span className={cn(
+                "transition-transform duration-200",
+                showToolResults ? "rotate-180" : ""
+              )}>▼</span>
+            </button>
+
+            {showToolResults && (
+              <div className="mt-3 space-y-2 animate-in slide-in-from-top-2 duration-300">
+                {toolResults.map((toolResult: any, idx: number) => {
+                  try {
+                    const result = typeof toolResult.result === 'string' 
+                      ? JSON.parse(toolResult.result) 
+                      : toolResult.result;
+                    
+                    const verses = result.verses || [];
+                    
+                    return (
+                      <div key={idx} className="space-y-2">
+                        {verses.map((verse: any, vIdx: number) => (
+                          <div 
+                            key={vIdx}
+                            className="p-3 rounded-lg bg-purple-50 dark:bg-gray-800 border border-purple-200 dark:border-gray-700"
+                          >
+                            <div className="font-semibold text-purple-700 dark:text-purple-300 text-sm mb-1">
+                              {verse.reference}
+                            </div>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 italic">
+                              "{verse.text}"
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  } catch (e) {
+                    return null;
+                  }
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>
