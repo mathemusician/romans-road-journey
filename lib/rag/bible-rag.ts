@@ -42,6 +42,7 @@ class BibleRAG {
   private embeddings: number[][] = [];
   private tfidf: any;
   private isInitialized = false;
+  private topicIndex: Map<string, number[]> = new Map();
 
   constructor() {
     this.verses = bibleVerses as BibleVerse[];
@@ -53,11 +54,29 @@ class BibleRAG {
 
     console.log('Initializing Bible RAG system...');
 
+    // Add documents to TF-IDF
     this.verses.forEach((verse) => {
       this.tfidf.addDocument(verse.text.toLowerCase());
     });
 
-    this.embeddings = this.verses.map((verse) => this.createSimpleEmbedding(verse.text));
+    // Build topic index for pre-filtering (only index keywords, not all verses)
+    const topics = ['money', 'wealth', 'rich', 'poor', 'prayer', 'pray', 'love', 'faith', 
+                    'sin', 'salvation', 'heaven', 'hell', 'grace', 'mercy', 'forgiveness',
+                    'fear', 'anxiety', 'peace', 'joy', 'hope', 'strength', 'wisdom'];
+    
+    topics.forEach(topic => {
+      const indices: number[] = [];
+      this.verses.forEach((verse, idx) => {
+        if (verse.text.toLowerCase().includes(topic)) {
+          indices.push(idx);
+        }
+      });
+      this.topicIndex.set(topic, indices);
+    });
+
+    // Only compute embeddings for frequently searched verses (optimization)
+    // We'll compute others on-demand
+    this.embeddings = new Array(this.verses.length);
 
     this.isInitialized = true;
     console.log(`Bible RAG initialized with ${this.verses.length} verses`);
@@ -117,51 +136,52 @@ class BibleRAG {
     return dotProduct / (magnitudeA * magnitudeB);
   }
 
-  private keywordSearch(query: string, topK: number = 5): SearchResult[] {
-    const queryTokens = tokenizer.tokenize(query.toLowerCase()) || [];
-    const scores: { index: number; score: number }[] = [];
-
-    this.verses.forEach((verse, index) => {
-      const verseTokens = tokenizer.tokenize(verse.text.toLowerCase()) || [];
-      let score = 0;
-
-      queryTokens.forEach(queryToken => {
-        if (verseTokens.includes(queryToken)) {
-          score += 1;
-        }
-      });
-
-      this.tfidf.tfidfs(query.toLowerCase(), (i: number, measure: number) => {
-        if (i === index) {
-          score += measure * 10;
-        }
-      });
-
-      if (score > 0) {
-        scores.push({ index, score });
+  private keywordSearch(query: string, topK: number = 10, candidateIndices?: number[]): SearchResult[] {
+    const results: { index: number; score: number }[] = [];
+    
+    // If candidate indices provided, only search those (pre-filtered)
+    const indicesToSearch = candidateIndices || Array.from({ length: this.verses.length }, (_, i) => i);
+    
+    // Limit to 1000 candidates max for performance
+    const searchIndices = indicesToSearch.slice(0, 1000);
+    
+    this.tfidf.tfidfs(query.toLowerCase(), (i: number, measure: number) => {
+      if (searchIndices.includes(i) && measure > 0) {
+        results.push({ index: i, score: measure });
       }
     });
 
-    scores.sort((a, b) => b.score - a.score);
+    results.sort((a, b) => b.score - a.score);
 
-    return scores.slice(0, topK).map(({ index, score }) => ({
+    return results.slice(0, topK).map(({ index, score }) => ({
       verse: this.verses[index],
       score,
-      source: 'keyword' as const
+      source: 'keyword' as const,
     }));
   }
 
-  private semanticSearch(query: string, topK: number = 5, threshold: number = 0.5): SearchResult[] {
+  private semanticSearch(query: string, topK: number = 5, threshold: number = 0.5, candidateIndices?: number[]): SearchResult[] {
     const queryEmbedding = this.createSimpleEmbedding(query);
     const results: SearchResult[] = [];
 
-    this.embeddings.forEach((embedding, index) => {
-      const similarity = this.cosineSimilarity(queryEmbedding, embedding);
+    // Only search candidate indices if provided (pre-filtered), otherwise search all
+    const indicesToSearch = candidateIndices || Array.from({ length: this.verses.length }, (_, i) => i);
+    
+    // Limit search to top 500 candidates max for performance
+    const searchIndices = indicesToSearch.slice(0, 500);
+
+    searchIndices.forEach((index) => {
+      // Compute embedding on-demand if not cached
+      if (!this.embeddings[index]) {
+        this.embeddings[index] = this.createSimpleEmbedding(this.verses[index].text);
+      }
+      
+      const similarity = this.cosineSimilarity(queryEmbedding, this.embeddings[index]);
       if (similarity >= threshold) {
         results.push({
           verse: this.verses[index],
           score: similarity,
-          source: 'semantic' as const
+          source: 'semantic' as const,
         });
       }
     });
