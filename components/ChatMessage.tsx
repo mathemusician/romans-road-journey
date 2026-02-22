@@ -195,8 +195,8 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
             <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
         ) : content && !messageParts ? (
-          <div className="text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-line">
-            {content}
+          <div className="text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+            {parseInlineMarkdown(content)}
           </div>
         ) : (
           <div className="space-y-3">
@@ -327,7 +327,7 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
               // Render text parts
               if (part.type === 'text') {
                 return (
-                  <div key={idx} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed">
+                  <div key={idx} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
                     {parseInlineMarkdown(part.text)}
                   </div>
                 );
