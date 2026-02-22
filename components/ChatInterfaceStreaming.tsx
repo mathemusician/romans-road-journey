@@ -177,7 +177,6 @@ export function ChatInterface() {
                   ?.filter(part => part.type === 'text')
                   .map(part => (part as any).text)
                   .join('') || ''}
-                parts={message.parts}
               />
             ))}
 
