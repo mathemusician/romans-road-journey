@@ -195,10 +195,33 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
             <span className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
         ) : (
-          <div className="space-y-3">
-            {(content || '').split('\n').map((line, i) => {
-              // Main heading (##) - Add large visual icon
-              if (line.startsWith('## ')) {
+          <div className="space-y-4">
+            {(() => {
+              // Group lines into paragraphs (separated by blank lines)
+              const lines = (content || '').split('\n');
+              const paragraphs: string[][] = [];
+              let currentParagraph: string[] = [];
+              
+              for (const line of lines) {
+                if (line.trim() === '') {
+                  if (currentParagraph.length > 0) {
+                    paragraphs.push(currentParagraph);
+                    currentParagraph = [];
+                  }
+                } else {
+                  currentParagraph.push(line);
+                }
+              }
+              if (currentParagraph.length > 0) {
+                paragraphs.push(currentParagraph);
+              }
+              
+              return paragraphs.map((paragraph, pIdx) => {
+                const line = paragraph.join('\n');
+                const i = pIdx;
+                
+                // Main heading (##) - Add large visual icon
+                if (line.startsWith('## ')) {
                 const heading = line.replace('## ', '');
                 const headingStepConfig = Object.keys(stepIcons).find(title => heading.includes(title));
                 const headingConfig = headingStepConfig ? stepIcons[headingStepConfig] : null;
@@ -312,7 +335,8 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
               }
               
               return null;
-            })}
+              });
+            })()}
           </div>
         )}
 
