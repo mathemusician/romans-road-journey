@@ -172,14 +172,20 @@ export function ChatInterface() {
             .map((message) => {
               // For user messages or messages without parts, use simple content
               if (message.role === 'user' || !message.parts) {
+                // Extract text content, preserving newlines
+                let content = '';
+                if (message.parts) {
+                  content = message.parts
+                    .filter(part => part.type === 'text')
+                    .map(part => (part as any).text)
+                    .join('\n\n'); // Join with double newlines for paragraph spacing
+                }
+                
                 return (
                   <ChatMessage
                     key={message.id}
                     role={message.role as 'user' | 'assistant'}
-                    content={message.parts
-                      ?.filter(part => part.type === 'text')
-                      .map(part => (part as any).text)
-                      .join('') || ''}
+                    content={content}
                   />
                 );
               }
