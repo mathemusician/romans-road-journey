@@ -15,13 +15,27 @@ function loadBibleVerses() {
     return JSON.parse(decompressed.toString());
   } catch (error) {
     console.error('Failed to load compressed Bible, falling back to uncompressed');
-    // Fallback to uncompressed if compressed doesn't exist
     const uncompressedPath = path.join(process.cwd(), 'data', 'bible-verses.json');
     return JSON.parse(fs.readFileSync(uncompressedPath, 'utf8'));
   }
 }
 
+// Load pre-computed embeddings
+function loadPrecomputedEmbeddings(): number[][] {
+  try {
+    const embeddingsPath = path.join(process.cwd(), 'data', 'bible-embeddings.json.gz');
+    const compressed = fs.readFileSync(embeddingsPath);
+    const decompressed = zlib.gunzipSync(compressed);
+    const data = JSON.parse(decompressed.toString());
+    return data.embeddings;
+  } catch (error) {
+    console.error('Failed to load pre-computed embeddings');
+    return [];
+  }
+}
+
 const bibleVerses = loadBibleVerses();
+const precomputedEmbeddings = loadPrecomputedEmbeddings();
 
 export interface BibleVerse {
   book: string;
@@ -47,6 +61,8 @@ class BibleRAG {
   constructor() {
     this.verses = bibleVerses as BibleVerse[];
     this.tfidf = new TfIdf();
+    // Load pre-computed embeddings
+    this.embeddings = precomputedEmbeddings;
   }
 
   async initialize() {
@@ -59,27 +75,8 @@ class BibleRAG {
       this.tfidf.addDocument(verse.text.toLowerCase());
     });
 
-    // Build topic index for pre-filtering (only index keywords, not all verses)
-    const topics = ['money', 'wealth', 'rich', 'poor', 'prayer', 'pray', 'love', 'faith', 
-                    'sin', 'salvation', 'heaven', 'hell', 'grace', 'mercy', 'forgiveness',
-                    'fear', 'anxiety', 'peace', 'joy', 'hope', 'strength', 'wisdom'];
-    
-    topics.forEach(topic => {
-      const indices: number[] = [];
-      this.verses.forEach((verse, idx) => {
-        if (verse.text.toLowerCase().includes(topic)) {
-          indices.push(idx);
-        }
-      });
-      this.topicIndex.set(topic, indices);
-    });
-
-    // Only compute embeddings for frequently searched verses (optimization)
-    // We'll compute others on-demand
-    this.embeddings = new Array(this.verses.length);
-
     this.isInitialized = true;
-    console.log(`Bible RAG initialized with ${this.verses.length} verses`);
+    console.log(`Bible RAG initialized with ${this.verses.length} verses and ${this.embeddings.length} pre-computed embeddings`);
   }
 
   private createSimpleEmbedding(text: string): number[] {
@@ -160,23 +157,14 @@ class BibleRAG {
     }));
   }
 
-  private semanticSearch(query: string, topK: number = 5, threshold: number = 0.5, candidateIndices?: number[]): SearchResult[] {
+  private semanticSearch(query: string, topK: number = 10, threshold: number = 0.3): SearchResult[] {
+    // Compute query embedding once
     const queryEmbedding = this.createSimpleEmbedding(query);
     const results: SearchResult[] = [];
 
-    // Only search candidate indices if provided (pre-filtered), otherwise search all
-    const indicesToSearch = candidateIndices || Array.from({ length: this.verses.length }, (_, i) => i);
-    
-    // Limit search to top 500 candidates max for performance
-    const searchIndices = indicesToSearch.slice(0, 500);
-
-    searchIndices.forEach((index) => {
-      // Compute embedding on-demand if not cached
-      if (!this.embeddings[index]) {
-        this.embeddings[index] = this.createSimpleEmbedding(this.verses[index].text);
-      }
-      
-      const similarity = this.cosineSimilarity(queryEmbedding, this.embeddings[index]);
+    // Fast cosine similarity search through ALL pre-computed embeddings
+    this.embeddings.forEach((embedding, index) => {
+      const similarity = this.cosineSimilarity(queryEmbedding, embedding);
       if (similarity >= threshold) {
         results.push({
           verse: this.verses[index],
@@ -186,6 +174,7 @@ class BibleRAG {
       }
     });
 
+    // Sort by score and return top K
     results.sort((a, b) => b.score - a.score);
     return results.slice(0, topK);
   }
