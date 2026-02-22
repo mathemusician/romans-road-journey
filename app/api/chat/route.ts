@@ -28,8 +28,10 @@ interface ChatRequest {
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('[API] Received chat request');
     const body: ChatRequest = await req.json();
     const { message, conversationHistory, state, action } = body;
+    console.log('[API] Action:', action, 'Message:', message?.substring(0, 50));
 
     let response = '';
     let newState = { ...state };
@@ -59,20 +61,26 @@ export async function POST(req: NextRequest) {
       // Detect if user is asking about a specific topic
       const topicKeywords = ['money', 'wealth', 'rich', 'poor', 'prayer', 'heaven', 'hell', 'love', 'faith', 'sin', 'forgiveness', 'grace', 'salvation', 'obey', 'obedience'];
       const detectedTopic = topicKeywords.find(topic => message.toLowerCase().includes(topic));
+      console.log('[API] Detected topic:', detectedTopic || 'none');
       
       // Use topic search if detected, otherwise use hybrid search
-      const searchResults = detectedTopic 
-        ? await searchByTopic(detectedTopic, 8)
-        : await searchBibleVerses(message, 8);
-      
-      if (searchResults.length > 0) {
-        bibleContext = `RELEVANT BIBLE VERSES FOR "${message}":\n\n`;
-        bibleContext += searchResults
-          .map((v, i) => `${i + 1}. ${v.reference}: "${v.text}"`)
-          .join('\n\n');
-      } else {
-        // If no results, provide a helpful message
-        bibleContext = `No specific verses found for "${message}". Please use the general biblical knowledge to answer.`;
+      try {
+        const searchResults = detectedTopic 
+          ? await searchByTopic(detectedTopic, 8)
+          : await searchBibleVerses(message, 8);
+        console.log('[API] RAG search returned', searchResults.length, 'verses');
+        
+        if (searchResults.length > 0) {
+          bibleContext = `RELEVANT BIBLE VERSES FOR "${message}":\n\n`;
+          bibleContext += searchResults
+            .map((v, i) => `${i + 1}. ${v.reference}: "${v.text}"`)
+            .join('\n\n');
+        } else {
+          bibleContext = `No specific verses found for "${message}". Please use the general biblical knowledge to answer.`;
+        }
+      } catch (ragError) {
+        console.error('[API] RAG search error:', ragError);
+        bibleContext = `Error searching Bible verses. Please try again.`;
       }
 
       const currentStepInfo = state.currentStep > 0 
@@ -83,15 +91,21 @@ export async function POST(req: NextRequest) {
         bibleContext += `\n\n---\nCURRENT ROMANS ROAD STEP (Step ${state.currentStep}/5):\n${currentStepInfo.verse}: "${currentStepInfo.text}"\n\nExplanation: ${currentStepInfo.explanation}`;
       }
 
-      // Add conversation context summary
       if (state.completedSteps.length > 0) {
         bibleContext += `\n\n---\nCOMPLETED STEPS: ${state.completedSteps.join(', ')}`;
       }
 
-      response = await generateAgentResponse(
-        conversationHistory,
-        bibleContext
-      );
+      console.log('[API] Calling AI with context length:', bibleContext.length);
+      try {
+        response = await generateAgentResponse(
+          conversationHistory,
+          bibleContext
+        );
+        console.log('[API] AI response received, length:', response.length);
+      } catch (aiError) {
+        console.error('[API] AI generation error:', aiError);
+        throw aiError;
+      }
 
       if (!state.userQuestions.includes(message)) {
         newState.userQuestions.push(message);

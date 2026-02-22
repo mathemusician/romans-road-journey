@@ -242,3 +242,12 @@ class BibleRAG {
 }
 
 export const bibleRAG = new BibleRAG();
+
+// Initialize immediately on module load (singleton pattern)
+// This ensures the RAG system is ready before any API calls
+if (typeof window === 'undefined') {
+  // Only initialize on server-side
+  bibleRAG.initialize().catch(err => {
+    console.error('Failed to initialize Bible RAG on module load:', err);
+  });
+}
