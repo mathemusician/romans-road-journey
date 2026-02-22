@@ -1,5 +1,4 @@
 import { Agent } from '@mastra/core/agent';
-import { Memory } from '@mastra/memory';
 import { bibleSearchTool } from '../tools/bible-search';
 
 const SYSTEM_INSTRUCTIONS = `You are a Bible research assistant. Your role is to help people understand what Scripture actually says - nothing more, nothing less.
@@ -55,5 +54,4 @@ export const bibleAgent = new Agent({
   tools: {
     bibleSearchTool,
   },
-  memory: new Memory(),
 });
