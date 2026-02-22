@@ -66,6 +66,9 @@ export async function POST(req: NextRequest) {
             }
           }
           
+          // Release the reader before awaiting promises
+          reader.releaseLock();
+          
           // After stream completes, get tool results from the promise
           const toolResults = await streamResult.toolResults;
           console.log('[STREAM] Tool results:', toolResults);
@@ -91,12 +94,12 @@ export async function POST(req: NextRequest) {
               console.log('[STREAM] Sent search results:', searchResults.length);
             }
           }
+          
+          // Close controller after everything is done
+          controller.close();
         } catch (error) {
           console.error('[STREAM] Error:', error);
           controller.error(error);
-        } finally {
-          reader.releaseLock();
-          controller.close();
         }
       }
     });
