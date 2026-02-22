@@ -174,10 +174,10 @@ export function ChatInterface() {
               // Mastra's AgentStreamToAISDKTransformer emits data-tool-agent with toolResults array
               let searchResults;
               
-              // Debug: Log entire message structure
-              if (message.role === 'assistant') {
-                console.log('[ChatInterface] Full message object:', message);
-                console.log('[ChatInterface] Message keys:', Object.keys(message));
+              // Debug: Log parts array to find tool results
+              if (message.role === 'assistant' && message.parts && message.parts.length > 1) {
+                console.log('[ChatInterface] Message parts:', message.parts);
+                console.log('[ChatInterface] Part types:', message.parts.map((p: any) => p.type));
               }
               
               return (
