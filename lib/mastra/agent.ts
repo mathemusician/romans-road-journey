@@ -51,13 +51,24 @@ export interface RomansRoadStep {
 export const romansRoadSteps: RomansRoadStep[] = romansRoadData.steps;
 export const sinnersPrayer = romansRoadData.sinnersPrayer;
 
-export async function searchBibleVerses(query: string, topK: number = 5) {
+export async function searchBibleVerses(
+  query: string, 
+  topK: number = 5,
+  keywordTerms: string[] = [],
+  semanticTerms: string[] = [],
+  biblicalTerms: string[] = []
+) {
   try {
-    const results = await bibleRAG.hybridSearch(query, topK);
+    // Combine all terms for expanded search
+    const allExpandedTerms = [...keywordTerms, ...semanticTerms, ...biblicalTerms];
+    
+    const results = await bibleRAG.hybridSearch(query, topK, 0.6, allExpandedTerms);
     return results.map(r => ({
       reference: r.verse.reference,
       text: r.verse.text,
-      score: r.score
+      book: r.verse.book,
+      chapter: r.verse.chapter,
+      verse: r.verse.verse,
     }));
   } catch (error) {
     console.error('Error searching Bible verses:', error);

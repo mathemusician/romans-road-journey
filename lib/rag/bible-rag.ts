@@ -179,50 +179,94 @@ class BibleRAG {
     return results.slice(0, topK);
   }
 
-  async hybridSearch(query: string, topK: number = 5, semanticWeight: number = 0.6): Promise<SearchResult[]> {
+  async hybridSearch(query: string, topK: number = 5, semanticWeight: number = 0.6, expandedTerms?: string[]): Promise<SearchResult[]> {
     if (!this.isInitialized) {
       await this.initialize();
     }
 
-    const semanticResults = this.semanticSearch(query, topK * 2, 0.3);
-    const keywordResults = this.keywordSearch(query, topK * 2);
+    // Run 3 parallel searches (all terms searched in parallel within each type)
+    const [semanticResults, keywordResults, expandedResults] = await Promise.all([
+      Promise.resolve(this.semanticSearch(query, topK * 2, 0.3)),
+      Promise.resolve(this.keywordSearch(query, topK * 2)),
+      this.expandedSearch(query, topK * 2, expandedTerms),
+    ]);
 
-    const combinedScores = new Map<string, { verse: BibleVerse; score: number }>();
+    const combinedMap = new Map<string, SearchResult>();
 
+    // Add semantic results (highest weight)
     semanticResults.forEach(result => {
       const key = result.verse.reference;
-      combinedScores.set(key, {
-        verse: result.verse,
-        score: result.score * semanticWeight
+      combinedMap.set(key, {
+        ...result,
+        score: result.score * semanticWeight,
       });
     });
 
-    const maxKeywordScore = Math.max(...keywordResults.map(r => r.score), 1);
+    // Add keyword results
     keywordResults.forEach(result => {
       const key = result.verse.reference;
-      const normalizedScore = result.score / maxKeywordScore;
-      const existing = combinedScores.get(key);
-
+      const existing = combinedMap.get(key);
       if (existing) {
-        existing.score += normalizedScore * (1 - semanticWeight);
+        existing.score += result.score * (1 - semanticWeight) * 0.5;
       } else {
-        combinedScores.set(key, {
-          verse: result.verse,
-          score: normalizedScore * (1 - semanticWeight)
+        combinedMap.set(key, {
+          ...result,
+          score: result.score * (1 - semanticWeight) * 0.5,
         });
       }
     });
 
-    const finalResults = Array.from(combinedScores.values())
-      .sort((a, b) => b.score - a.score)
-      .slice(0, topK)
-      .map(({ verse, score }) => ({
-        verse,
-        score,
-        source: 'hybrid' as const
-      }));
+    // Add AI-expanded results
+    expandedResults.forEach(result => {
+      const key = result.verse.reference;
+      const existing = combinedMap.get(key);
+      if (existing) {
+        existing.score += result.score * (1 - semanticWeight) * 0.5;
+      } else {
+        combinedMap.set(key, {
+          ...result,
+          score: result.score * (1 - semanticWeight) * 0.5,
+        });
+      }
+    });
 
-    return finalResults;
+    const results = Array.from(combinedMap.values());
+    results.sort((a, b) => b.score - a.score);
+
+    return results.slice(0, topK);
+  }
+
+  private async expandedSearch(query: string, topK: number = 10, expandedTerms?: string[]): Promise<SearchResult[]> {
+    try {
+      // If no expanded terms provided, just return empty (will be provided by API)
+      if (!expandedTerms || expandedTerms.length === 0) {
+        return [];
+      }
+      
+      // Search ALL expanded terms in PARALLEL
+      const searchPromises = expandedTerms.map(term => 
+        Promise.resolve(this.keywordSearch(term, 5))
+      );
+      
+      const allResultArrays = await Promise.all(searchPromises);
+      const allResults = allResultArrays.flat();
+
+      // Deduplicate and return top results
+      const uniqueMap = new Map<string, SearchResult>();
+      allResults.forEach(result => {
+        const key = result.verse.reference;
+        if (!uniqueMap.has(key) || uniqueMap.get(key)!.score < result.score) {
+          uniqueMap.set(key, result);
+        }
+      });
+
+      const results = Array.from(uniqueMap.values());
+      results.sort((a, b) => b.score - a.score);
+      return results.slice(0, topK);
+    } catch (error) {
+      console.error('Expanded search failed:', error);
+      return [];
+    }
   }
 
   async searchByReference(reference: string): Promise<BibleVerse | null> {

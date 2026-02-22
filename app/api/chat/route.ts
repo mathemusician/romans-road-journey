@@ -64,16 +64,61 @@ export async function POST(req: NextRequest) {
       newState.hasAcceptedChrist = true;
     } else {
       // ONLY use AI for user questions - not templates!
-      // Detect if user is asking about a specific topic
-      const topicKeywords = ['money', 'wealth', 'rich', 'poor', 'prayer', 'heaven', 'hell', 'love', 'faith', 'sin', 'forgiveness', 'grace', 'salvation', 'obey', 'obedience'];
-      const detectedTopic = topicKeywords.find(topic => message.toLowerCase().includes(topic));
-      console.log('[API] Detected topic:', detectedTopic || 'none');
       
-      // Use topic search if detected, otherwise use hybrid search
+      // Step 1: Call AI ONCE to generate 3 arrays of search terms
+      let keywordTerms: string[] = [];
+      let semanticTerms: string[] = [];
+      let biblicalTerms: string[] = [];
+      
       try {
-        const searchResults = detectedTopic 
-          ? await searchByTopic(detectedTopic, 8)
-          : await searchBibleVerses(message, 8);
+        const searchTermsPrompt = `Given the query "${message}", generate 3 arrays of search terms to find relevant Bible verses:
+
+1. KEYWORD TERMS: Exact words/phrases from the query
+2. SEMANTIC TERMS: Conceptually related modern terms
+3. BIBLICAL TERMS: Biblical language equivalents
+
+Examples:
+Query: "monsters"
+{
+  "keyword": ["monster", "monsters"],
+  "semantic": ["creature", "beast", "evil being"],
+  "biblical": ["leviathan", "behemoth", "dragon", "serpent", "beast"]
+}
+
+Query: "money"
+{
+  "keyword": ["money"],
+  "semantic": ["wealth", "finances", "riches"],
+  "biblical": ["mammon", "treasure", "silver", "gold"]
+}
+
+Return ONLY a JSON object with these 3 arrays, nothing else.`;
+        
+        const termsResponse = await generateAgentResponse(
+          [{ role: 'user', content: searchTermsPrompt }],
+          ''
+        );
+        
+        // Parse AI response to get 3 arrays
+        try {
+          const match = termsResponse.match(/\{[\s\S]*\}/);
+          if (match) {
+            const parsed = JSON.parse(match[0]);
+            keywordTerms = parsed.keyword || [];
+            semanticTerms = parsed.semantic || [];
+            biblicalTerms = parsed.biblical || [];
+            console.log('[API] AI generated search terms:', { keywordTerms, semanticTerms, biblicalTerms });
+          }
+        } catch (parseError) {
+          console.error('[API] Failed to parse AI search terms response');
+        }
+      } catch (aiError) {
+        console.error('[API] AI search term generation failed:', aiError);
+      }
+      
+      // Step 2: Run 3 PARALLEL searches with the 3 arrays
+      try {
+        const searchResults = await searchBibleVerses(message, 8, keywordTerms, semanticTerms, biblicalTerms);
         console.log('[API] RAG search returned', searchResults.length, 'verses');
         
         if (searchResults.length > 0) {
