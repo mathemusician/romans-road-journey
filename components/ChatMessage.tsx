@@ -79,7 +79,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
           'max-w-[85%] rounded-3xl px-8 py-6 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-3xl',
           isUser
             ? 'bg-gradient-to-br from-blue-600 to-blue-500 text-white'
-            : 'bg-white/98 dark:bg-white/98 light:bg-white text-gray-900 border-2 border-white/30 dark:border-white/30 light:border-gray-200'
+            : 'bg-white/98 dark:bg-gray-900/95 text-gray-900 dark:text-white border-2 border-white/30 dark:border-gray-700'
         )}
       >
         {isTyping ? (
