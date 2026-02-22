@@ -149,12 +149,20 @@ class BibleRAG {
     });
 
     results.sort((a, b) => b.score - a.score);
-
-    return results.slice(0, topK).map(({ index, score }) => ({
+    
+    const topResults = results.slice(0, topK).map(({ index, score }) => ({
       verse: this.verses[index],
       score,
       source: 'keyword' as const,
     }));
+    
+    // Log for specific terms we care about
+    if (query.includes('leviathan') || query.includes('behemoth')) {
+      console.log(`[RAG] Keyword search for "${query}": found ${results.length} results, top 3:`, 
+        topResults.slice(0, 3).map(r => ({ ref: r.verse.reference, score: r.score })));
+    }
+    
+    return topResults;
   }
 
   private semanticSearch(query: string, topK: number = 10, threshold: number = 0.3): SearchResult[] {
