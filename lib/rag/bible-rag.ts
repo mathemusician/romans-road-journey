@@ -1,4 +1,3 @@
-import { IndexFlatL2 } from 'faiss-node';
 import natural from 'natural';
 import bibleVerses from '@/data/bible-verses.json';
 
@@ -22,7 +21,6 @@ export interface SearchResult {
 class BibleRAG {
   private verses: BibleVerse[];
   private embeddings: number[][] = [];
-  private faissIndex: IndexFlatL2 | null = null;
   private tfidf: any;
   private isInitialized = false;
 
@@ -41,12 +39,6 @@ class BibleRAG {
     });
 
     this.embeddings = this.verses.map((verse) => this.createSimpleEmbedding(verse.text));
-
-    const dimension = this.embeddings[0].length;
-    this.faissIndex = new IndexFlatL2(dimension);
-
-    const flatEmbeddings = this.embeddings.flat();
-    this.faissIndex.add(flatEmbeddings);
 
     this.isInitialized = true;
     console.log(`Bible RAG initialized with ${this.verses.length} verses`);
@@ -139,10 +131,6 @@ class BibleRAG {
   }
 
   private semanticSearch(query: string, topK: number = 5, threshold: number = 0.5): SearchResult[] {
-    if (!this.faissIndex) {
-      throw new Error('FAISS index not initialized');
-    }
-
     const queryEmbedding = this.createSimpleEmbedding(query);
     const results: SearchResult[] = [];
 
