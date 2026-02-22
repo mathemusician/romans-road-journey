@@ -169,16 +169,23 @@ export function ChatInterface() {
         <div className="max-w-4xl mx-auto space-y-6">
           {messages
             .filter(message => message.role !== 'system')
-            .map((message) => (
-              <ChatMessage
-                key={message.id}
-                role={message.role as 'user' | 'assistant'}
-                content={message.parts
-                  ?.filter(part => part.type === 'text')
-                  .map(part => (part as any).text)
-                  .join('') || ''}
-              />
-            ))}
+            .map((message) => {
+              // Extract search results from message data/annotations
+              const searchResults = (message as any).data?.searchResults || 
+                                   (message as any).annotations?.find((a: any) => a.searchResults)?.searchResults;
+              
+              return (
+                <ChatMessage
+                  key={message.id}
+                  role={message.role as 'user' | 'assistant'}
+                  content={message.parts
+                    ?.filter(part => part.type === 'text')
+                    .map(part => (part as any).text)
+                    .join('') || ''}
+                  searchResults={searchResults}
+                />
+              );
+            })}
 
           {isStreaming && (
             <div className="flex items-center gap-2 text-white/60 text-sm">

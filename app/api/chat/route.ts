@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
     const streamResult = await agent.stream(messages);
     
     // Create a new ReadableStream that transforms Mastra chunks to AI SDK format
+    const searchResults: any[] = [];
+    
     const aiSdkStream = new ReadableStream({
       async start(controller) {
         const reader = streamResult.fullStream.getReader();
@@ -52,7 +54,17 @@ export async function POST(req: NextRequest) {
         try {
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
+            if (done) {
+              // Send collected search results as final data event
+              if (searchResults.length > 0) {
+                controller.enqueue({
+                  type: 'data',
+                  data: { searchResults }
+                });
+                console.log('[STREAM] Sent search results:', searchResults.length);
+              }
+              break;
+            }
             
             const chunk = value as any;
             
@@ -62,9 +74,15 @@ export async function POST(req: NextRequest) {
                 type: 'text-delta',
                 textDelta: chunk.payload?.text || ''
               });
+            } else if (chunk.type === 'bible-search-result') {
+              // Collect custom search result events
+              console.log('[STREAM] Captured bible-search-result:', chunk);
+              searchResults.push({
+                query: chunk.query,
+                verses: chunk.verses,
+                count: chunk.count
+              });
             }
-            // Note: Tool events don't appear in Mastra's fullStream
-            // Tools execute internally but don't emit stream chunks
           }
         } catch (error) {
           controller.error(error);

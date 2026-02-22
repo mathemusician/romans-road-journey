@@ -18,7 +18,7 @@ export const bibleSearchTool = createTool({
     })),
     count: z.number(),
   }),
-  execute: async ({ query }) => {
+  execute: async ({ query }, context) => {
     console.log('[Bible Search Tool] Searching for:', query);
 
     // Perform hybrid search without expanded terms (RAG will handle it internally)
@@ -33,6 +33,16 @@ export const bibleSearchTool = createTool({
     }));
 
     console.log('[Bible Search Tool] Found', verses.length, 'verses');
+
+    // Emit custom event with search results so they appear in the stream
+    if (context?.writer) {
+      context.writer.write({
+        type: 'bible-search-result',
+        query,
+        verses,
+        count: verses.length,
+      });
+    }
 
     return {
       verses,
