@@ -70,6 +70,45 @@ function parseInlineMarkdown(text: string): React.ReactNode {
   return parts.length > 0 ? parts : text;
 }
 
+// Collapsible search result component
+function CollapsibleSearchResult({ query, verses }: { query: string; verses: any[] }) {
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  
+  return (
+    <div className="border-l-4 border-purple-400 pl-4 py-2 bg-purple-50/50 dark:bg-purple-900/10 rounded-r-lg">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full text-left text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2 hover:text-purple-800 dark:hover:text-purple-200 transition-colors"
+      >
+        <BookOpen className="w-4 h-4" />
+        Search: "{query}" ({verses.length} {verses.length === 1 ? 'verse' : 'verses'})
+        <span className={cn(
+          "ml-auto transition-transform duration-200",
+          isExpanded ? "rotate-180" : ""
+        )}>▼</span>
+      </button>
+      
+      {isExpanded && (
+        <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+          {verses.map((verse: any, vIdx: number) => (
+            <div 
+              key={vIdx}
+              className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-purple-200 dark:border-gray-700"
+            >
+              <div className="font-semibold text-purple-700 dark:text-purple-300 text-sm mb-1">
+                {verse.reference}
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 italic">
+                "{verse.text}"
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessageProps) {
   const isUser = role === 'user';
 
@@ -296,29 +335,7 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
                 const mergedVerses = mergeConsecutiveVerses(verses);
                 const query = part.input?.query || 'Unknown query';
                 
-                return (
-                  <div key={idx} className="border-l-4 border-purple-400 pl-4 py-2 bg-purple-50/50 dark:bg-purple-900/10 rounded-r-lg">
-                    <div className="text-sm font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">
-                      <BookOpen className="w-4 h-4" />
-                      Search: "{query}"
-                    </div>
-                    <div className="space-y-2">
-                      {mergedVerses.map((verse: any, vIdx: number) => (
-                        <div 
-                          key={vIdx}
-                          className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-purple-200 dark:border-gray-700"
-                        >
-                          <div className="font-semibold text-purple-700 dark:text-purple-300 text-sm mb-1">
-                            {verse.reference}
-                          </div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-                            "{verse.text}"
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
+                return <CollapsibleSearchResult key={idx} query={query} verses={mergedVerses} />;
               }
               
               return null;
