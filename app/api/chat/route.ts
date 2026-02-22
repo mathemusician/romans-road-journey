@@ -21,7 +21,7 @@ interface ChatRequest {
   message: string;
   conversationHistory: ChatMessage[];
   state: ConversationState;
-  action?: 'start' | 'next_step' | 'show_prayer' | 'ask_question';
+  action?: 'start' | 'next_step' | 'show_prayer';
 }
 
 export async function POST(req: NextRequest) {
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       response = getPrayerGuidance();
       newState.hasAcceptedChrist = true;
     } else {
-      // Use Mastra agent to handle user questions
+      // Use Mastra agent for user questions
       console.log('[API] Using Mastra agent for user question');
       
       const agent = mastra.getAgent('bibleAgent');
