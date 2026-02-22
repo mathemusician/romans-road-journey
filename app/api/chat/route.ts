@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server';
-import { handleChatStream } from '@mastra/ai-sdk';
 import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 import { mastra } from '@/lib/mastra';
 import {
@@ -40,13 +39,13 @@ export async function POST(req: NextRequest) {
 
     // Handle user questions with Mastra agent streaming
     console.log('[STREAM API] Streaming agent response');
-    const stream = await handleChatStream({
-      mastra,
-      agentId: 'bibleAgent',
-      params: { messages },
-    });
-
-    return createUIMessageStreamResponse({ stream });
+    
+    // Get the agent and use fullStream to include tool events
+    const agent = mastra.getAgent('bibleAgent');
+    const streamResult = await agent.stream(messages);
+    
+    // Cast to any to bypass TypeScript stream type incompatibility
+    return createUIMessageStreamResponse({ stream: streamResult.fullStream as any });
   } catch (error) {
     console.error('[STREAM API] Error:', error);
     return new Response(
