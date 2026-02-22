@@ -1,8 +1,27 @@
 import natural from 'natural';
-import bibleVerses from '@/data/bible-verses.json';
+import fs from 'fs';
+import zlib from 'zlib';
+import path from 'path';
 
 const TfIdf = natural.TfIdf;
 const tokenizer = new natural.WordTokenizer();
+
+// Load Bible verses from compressed file
+function loadBibleVerses() {
+  try {
+    const compressedPath = path.join(process.cwd(), 'data', 'bible-verses.json.gz');
+    const compressed = fs.readFileSync(compressedPath);
+    const decompressed = zlib.gunzipSync(compressed);
+    return JSON.parse(decompressed.toString());
+  } catch (error) {
+    console.error('Failed to load compressed Bible, falling back to uncompressed');
+    // Fallback to uncompressed if compressed doesn't exist
+    const uncompressedPath = path.join(process.cwd(), 'data', 'bible-verses.json');
+    return JSON.parse(fs.readFileSync(uncompressedPath, 'utf8'));
+  }
+}
+
+const bibleVerses = loadBibleVerses();
 
 export interface BibleVerse {
   book: string;
