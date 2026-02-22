@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { BookOpen, Sparkles, AlertCircle, Skull, Heart, Cross, Phone, OctagonX, AlertTriangle, GitBranch, Signpost, Sparkle } from 'lucide-react';
 
@@ -42,6 +43,31 @@ const stepIcons: Record<string, { icon: any; gradient: string; bgGradient: strin
     symbolism: 'Heaven - Eternal Life'
   }
 };
+
+// Helper function to parse inline markdown (bold text)
+function parseInlineMarkdown(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  const boldRegex = /\*\*(.+?)\*\*/g;
+  let match;
+
+  while ((match = boldRegex.exec(text)) !== null) {
+    // Add text before the bold
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    // Add bold text
+    parts.push(<strong key={match.index} className="font-bold">{match[1]}</strong>);
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+}
 
 export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
   const isUser = role === 'user';
@@ -161,7 +187,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                 );
               }
               
-              // Bold text
+              // Bold text (full line)
               if (line.startsWith('**') && line.endsWith('**')) {
                 return <p key={i} className="font-bold text-gray-900 dark:text-gray-100 text-base">{line.replace(/\*\*/g, '')}</p>;
               }
@@ -202,7 +228,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               
               // Regular paragraph - readable size
               if (line.trim()) {
-                return <p key={i} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed">{line}</p>;
+                return <p key={i} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed">{parseInlineMarkdown(line)}</p>;
               }
               
               return null;
