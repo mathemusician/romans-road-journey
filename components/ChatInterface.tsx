@@ -120,12 +120,12 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 light:from-blue-50 light:via-purple-50 light:to-pink-50 relative overflow-hidden">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+      <div className="absolute inset-0 opacity-20 dark:opacity-20 light:opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 dark:bg-blue-500 light:bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-500 dark:bg-purple-500 light:bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 dark:bg-pink-500 light:bg-pink-400 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
       </div>
 
       {state.currentStep > 0 && (
@@ -150,7 +150,7 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
         </div>
       </div>
 
-      <div className="relative z-10 backdrop-blur-xl bg-white/10 border-t border-white/20">
+      <div className="relative z-10 backdrop-blur-xl bg-white/10 dark:bg-white/10 border-t border-white/20 dark:border-white/20 light:bg-white/80 light:border-gray-200">
         <div className="max-w-4xl mx-auto px-4 py-4">
           {state.currentStep === 0 && !state.journeyComplete && (
             <div className="mb-3">
@@ -196,7 +196,7 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me anything..."
               disabled={isLoading}
-              className="flex-1 px-6 py-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-4 bg-white/20 dark:bg-white/20 dark:text-white dark:placeholder-white/60 light:bg-white light:text-gray-900 light:placeholder-gray-400 backdrop-blur-md border border-white/30 dark:border-white/30 light:border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/50 dark:focus:ring-white/50 light:focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <button
               type="submit"
