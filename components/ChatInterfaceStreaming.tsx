@@ -153,7 +153,7 @@ export function ChatInterface() {
   const isStreaming = status === 'streaming' || status === 'submitted' || isLoadingAction;
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-purple-500 via-blue-500 to-purple-600 dark:from-purple-900 dark:via-blue-900 dark:to-purple-900">
       <div className="flex-1 overflow-y-auto px-4 py-8 space-y-6">
         {state.currentStep > 0 && (
           <div className="max-w-4xl mx-auto mb-6">
