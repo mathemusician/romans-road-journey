@@ -116,9 +116,9 @@ Return ONLY a JSON object with these 3 arrays, nothing else.`;
         console.error('[API] AI search term generation failed:', aiError);
       }
       
-      // Step 2: Run 3 PARALLEL searches with the 3 arrays
+      // Step 2: Run 3 PARALLEL searches with the 3 arrays (comprehensive: 20 verses with context)
       try {
-        const searchResults = await searchBibleVerses(message, 8, keywordTerms, semanticTerms, biblicalTerms);
+        const searchResults = await searchBibleVerses(message, 20, keywordTerms, semanticTerms, biblicalTerms);
         console.log('[API] RAG search returned', searchResults.length, 'verses');
         
         if (searchResults.length > 0) {

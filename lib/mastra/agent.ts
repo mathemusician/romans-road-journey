@@ -53,7 +53,7 @@ export const sinnersPrayer = romansRoadData.sinnersPrayer;
 
 export async function searchBibleVerses(
   query: string, 
-  topK: number = 5,
+  topK: number = 20,
   keywordTerms: string[] = [],
   semanticTerms: string[] = [],
   biblicalTerms: string[] = []

@@ -181,79 +181,94 @@ class BibleRAG {
     return results.slice(0, topK);
   }
 
-  async hybridSearch(query: string, topK: number = 5, semanticWeight: number = 0.6, expandedTerms?: string[]): Promise<SearchResult[]> {
+  async hybridSearch(query: string, topK: number = 20, semanticWeight: number = 0.6, expandedTerms?: string[]): Promise<SearchResult[]> {
     if (!this.isInitialized) {
       await this.initialize();
     }
 
-    console.log(`[RAG] Starting hybrid search for: "${query}"`);
+    console.log(`[RAG] Starting hybrid search for: "${query}" (topK: ${topK})`);
     console.log(`[RAG] Expanded terms:`, expandedTerms);
 
-    // Run 3 parallel searches (all terms searched in parallel within each type)
+    // Run 3 parallel searches - retrieve more candidates for better coverage
     const [semanticResults, keywordResults, expandedResults] = await Promise.all([
-      Promise.resolve(this.semanticSearch(query, topK * 2, 0.3)),
-      Promise.resolve(this.keywordSearch(query, topK * 2)),
-      this.expandedSearch(query, topK * 2, expandedTerms),
+      Promise.resolve(this.semanticSearch(query, topK * 3, 0.3)),
+      Promise.resolve(this.keywordSearch(query, topK * 3)),
+      this.expandedSearch(query, topK * 3, expandedTerms),
     ]);
 
     console.log(`[RAG] Search results - Semantic: ${semanticResults.length}, Keyword: ${keywordResults.length}, Expanded: ${expandedResults.length}`);
 
+    // Simple scoring: combine all results without complex weighting
     const combinedMap = new Map<string, SearchResult>();
 
-    // Add semantic results (highest weight)
-    semanticResults.forEach(result => {
-      const key = result.verse.reference;
-      combinedMap.set(key, {
-        ...result,
-        score: result.score * semanticWeight,
-      });
-    });
-
-    // Add keyword results
-    keywordResults.forEach(result => {
+    // Add all results with equal weight
+    [...semanticResults, ...keywordResults, ...expandedResults].forEach(result => {
       const key = result.verse.reference;
       const existing = combinedMap.get(key);
       if (existing) {
-        existing.score += result.score * (1 - semanticWeight) * 0.5;
+        // Simple additive scoring - verses that appear in multiple searches rank higher
+        existing.score += result.score;
       } else {
-        combinedMap.set(key, {
-          ...result,
-          score: result.score * (1 - semanticWeight) * 0.5,
-        });
-      }
-    });
-
-    // Add AI-expanded results
-    expandedResults.forEach(result => {
-      const key = result.verse.reference;
-      const existing = combinedMap.get(key);
-      if (existing) {
-        existing.score += result.score * (1 - semanticWeight) * 0.5;
-      } else {
-        combinedMap.set(key, {
-          ...result,
-          score: result.score * (1 - semanticWeight) * 0.5,
-        });
+        combinedMap.set(key, result);
       }
     });
 
     const results = Array.from(combinedMap.values());
     results.sort((a, b) => b.score - a.score);
 
-    return results.slice(0, topK);
+    // Get top results
+    const topResults = results.slice(0, topK);
+    
+    // Add surrounding context (sentence window retrieval)
+    const withContext = this.addSurroundingContext(topResults, 1);
+
+    return withContext;
+  }
+
+  private addSurroundingContext(results: SearchResult[], contextWindow: number = 1): SearchResult[] {
+    // For each result, add N verses before and after for context
+    const enrichedResults: SearchResult[] = [];
+    
+    results.forEach(result => {
+      const currentIndex = this.verses.findIndex(v => v.reference === result.verse.reference);
+      if (currentIndex === -1) {
+        enrichedResults.push(result);
+        return;
+      }
+
+      // Get surrounding verses
+      const contextVerses: BibleVerse[] = [];
+      for (let i = Math.max(0, currentIndex - contextWindow); i <= Math.min(this.verses.length - 1, currentIndex + contextWindow); i++) {
+        const verse = this.verses[i];
+        // Only include verses from the same book and chapter for coherent context
+        if (verse.book === result.verse.book && verse.chapter === result.verse.chapter) {
+          contextVerses.push(verse);
+        }
+      }
+
+      // Create enriched result with context
+      enrichedResults.push({
+        ...result,
+        verse: {
+          ...result.verse,
+          // Store context in a way that can be used by the AI
+          text: contextVerses.map(v => `${v.reference}: ${v.text}`).join('\n')
+        }
+      });
+    });
+
+    return enrichedResults;
   }
 
   private async expandedSearch(query: string, topK: number = 10, expandedTerms?: string[]): Promise<SearchResult[]> {
     try {
-      // If no expanded terms provided, just return empty (will be provided by API)
       if (!expandedTerms || expandedTerms.length === 0) {
-        console.log('[RAG] No expanded terms provided for expanded search');
         return [];
       }
       
       console.log(`[RAG] Expanded search with ${expandedTerms.length} terms:`, expandedTerms);
       
-      // Search ALL expanded terms in PARALLEL (get more results per term)
+      // Search ALL expanded terms in PARALLEL
       const searchPromises = expandedTerms.map(term => 
         Promise.resolve(this.keywordSearch(term, 10))
       );
@@ -261,25 +276,19 @@ class BibleRAG {
       const allResultArrays = await Promise.all(searchPromises);
       const allResults = allResultArrays.flat();
       
-      console.log(`[RAG] Expanded search found ${allResults.length} total results before dedup`);
+      console.log(`[RAG] Expanded search found ${allResults.length} total results`);
 
-      // Deduplicate and boost scores for multiple matches
+      // Simple deduplication - no boosting
       const uniqueMap = new Map<string, SearchResult>();
       allResults.forEach(result => {
         const key = result.verse.reference;
-        const existing = uniqueMap.get(key);
-        if (!existing) {
+        if (!uniqueMap.has(key)) {
           uniqueMap.set(key, result);
-        } else {
-          // Boost score if verse matches multiple terms
-          existing.score += result.score * 0.5;
         }
       });
 
       const results = Array.from(uniqueMap.values());
       results.sort((a, b) => b.score - a.score);
-      
-      console.log(`[RAG] Expanded search top 5 results:`, results.slice(0, 5).map(r => ({ ref: r.verse.reference, score: r.score })));
       
       return results.slice(0, topK);
     } catch (error) {
