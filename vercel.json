@@ -1,12 +1,7 @@
 {
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "OPENROUTER_API_KEY": "@openrouter_api_key",
-    "OPENROUTER_APP_NAME": "Romans Road Journey",
-    "OPENROUTER_APP_URL": "@openrouter_app_url"
-  }
+  "regions": ["iad1"]
 }
