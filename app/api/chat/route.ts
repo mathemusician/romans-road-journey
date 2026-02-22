@@ -73,18 +73,21 @@ async function handleTemplateStream(action: string, state: ConversationState) {
 
         // Generate template content
         if (action === 'welcome') {
-          templateText = `Welcome to the Romans Road Journey! 🙏
+          templateText = `Welcome! I'm your Bible research assistant. �
 
-I'm here to walk with you through one of the most beautiful presentations of the gospel found in God's Word. The "Romans Road" is a collection of verses from the Book of Romans that clearly explains God's plan of salvation.
+**I can help you in two ways:**
 
-This journey will help you understand:
-- Why we all need salvation
-- What God has done for us through Jesus Christ
-- How you can receive eternal life
+**1. Ask Me Anything About the Bible**
+Have questions about what Scripture says? I can search through all 31,100 verses to find relevant passages and provide thoughtful analysis on any topic.
 
-We'll go step by step, and you can ask questions at any time. Are you ready to begin this important journey?
+**2. Take the Romans Road Journey**
+New to Christianity or want to understand God's plan of salvation? The Romans Road is a guided journey through key verses that explain the gospel step by step.
 
-Click "Start the Romans Road" when you're ready, or feel free to ask me any questions first.`;
+**What would you like to do?**
+- Ask me any Bible question (e.g., "What does the Bible say about forgiveness?")
+- Click "Start the Romans Road" for a guided journey through salvation
+
+I'm here to help you explore God's Word!`;
         } else if (action === 'start') {
           newState.currentStep = 1;
           templateText = await getStepMessage(1, true);
