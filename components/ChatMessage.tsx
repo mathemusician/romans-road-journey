@@ -79,7 +79,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
           'max-w-[85%] rounded-3xl px-8 py-6 shadow-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-3xl',
           isUser
             ? 'bg-gradient-to-br from-blue-600 to-blue-500 text-white'
-            : 'bg-white/98 dark:bg-gray-900/95 text-gray-900 dark:text-white border-2 border-white/30 dark:border-gray-700'
+            : 'bg-white dark:bg-[#1e1e1e] text-gray-900 dark:text-gray-100 border-2 border-gray-200 dark:border-gray-700'
         )}
       >
         {isTyping ? (
@@ -143,7 +143,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                   <div key={i} className="my-6 animate-in slide-in-from-right duration-700">
                     <div className={cn(
                       "relative p-8 rounded-3xl border-l-8 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-3xl",
-                      `bg-gradient-to-r ${verseStepConfig.bgGradient}`
+                      `bg-gradient-to-r ${verseStepConfig.bgGradient} dark:from-gray-800 dark:to-gray-800`
                     )} style={{ borderLeftColor: stepConfig ? undefined : '#a855f7' }}>
                       <div className="absolute top-4 left-4 opacity-10">
                         <BookOpen className="w-16 h-16" />
@@ -152,7 +152,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                         <div className="flex-shrink-0 w-12 h-12 rounded-full bg-purple-600 dark:bg-purple-500 flex items-center justify-center shadow-lg">
                           <BookOpen className="w-6 h-6 text-white" />
                         </div>
-                        <p className="text-2xl italic font-serif text-gray-800 dark:text-gray-100 leading-relaxed">
+                        <p className="text-2xl italic font-serif text-gray-800 dark:text-gray-200 leading-relaxed">
                           {line.replace(/\*/g, '')}
                         </p>
                       </div>
@@ -163,7 +163,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               
               // Bold text
               if (line.startsWith('**') && line.endsWith('**')) {
-                return <p key={i} className="font-bold text-gray-900 text-base">{line.replace(/\*\*/g, '')}</p>;
+                return <p key={i} className="font-bold text-gray-900 dark:text-gray-100 text-base">{line.replace(/\*\*/g, '')}</p>;
               }
               
               // List items - Related Scriptures with interactive cards
@@ -175,7 +175,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                   const [_, reference, verseText] = match;
                   return (
                     <div key={i} className="group mb-3 animate-in slide-in-from-left duration-500" style={{ animationDelay: `${i * 100}ms` }}>
-                      <div className="relative p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-2 border-purple-200 dark:border-purple-700 hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer">
+                      <div className="relative p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50 dark:from-gray-800 dark:to-gray-800 border-2 border-purple-200 dark:border-gray-600 hover:border-purple-400 dark:hover:border-gray-500 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer">
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
                             <BookOpen className="w-4 h-4 text-white" />
@@ -192,7 +192,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                     </div>
                   );
                 }
-                return <li key={i} className="ml-4 text-base text-gray-700">{listText}</li>;
+                return <li key={i} className="ml-4 text-base text-gray-700 dark:text-gray-300">{listText}</li>;
               }
               
               // Divider
@@ -202,7 +202,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               
               // Regular paragraph - readable size
               if (line.trim()) {
-                return <p key={i} className="text-base leading-relaxed text-gray-700">{line}</p>;
+                return <p key={i} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed">{line}</p>;
               }
               
               return null;
