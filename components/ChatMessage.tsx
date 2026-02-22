@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { BookOpen, Sparkles, AlertCircle, Skull, Heart, Cross, Phone } from 'lucide-react';
+import { BookOpen, Sparkles, AlertCircle, Skull, Heart, Cross, Phone, OctagonX, AlertTriangle, GitBranch, Signpost, Sparkle } from 'lucide-react';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
@@ -9,32 +9,37 @@ interface ChatMessageProps {
   isTyping?: boolean;
 }
 
-// Map step titles to icons and colors
-const stepIcons: Record<string, { icon: any; gradient: string; bgGradient: string }> = {
+// Map step titles to icons and colors based on traditional Romans Road imagery
+const stepIcons: Record<string, { icon: any; gradient: string; bgGradient: string; symbolism: string }> = {
   'All Have Sinned': { 
-    icon: AlertCircle, 
-    gradient: 'from-red-500 to-orange-500',
-    bgGradient: 'from-red-50 to-orange-50'
+    icon: OctagonX, // STOP sign - stop and recognize sin
+    gradient: 'from-black via-gray-800 to-black', // Black = sin, separation
+    bgGradient: 'from-gray-50 to-gray-100',
+    symbolism: 'STOP Sign - Recognize Sin'
   },
   'The Consequence of Sin': { 
-    icon: Skull, 
-    gradient: 'from-gray-700 to-gray-900',
-    bgGradient: 'from-gray-100 to-gray-200'
+    icon: AlertTriangle, // Danger sign - warning of consequences
+    gradient: 'from-red-600 via-red-700 to-red-800', // Red = blood, death, danger
+    bgGradient: 'from-red-50 to-orange-50',
+    symbolism: 'Danger Sign - Wages of Sin'
   },
   "God's Love Demonstrated": { 
-    icon: Heart, 
-    gradient: 'from-pink-500 to-rose-600',
-    bgGradient: 'from-pink-50 to-rose-50'
+    icon: GitBranch, // Bridge sign - God bridges the gap
+    gradient: 'from-red-500 via-rose-600 to-pink-600', // Red = Christ's blood sacrifice
+    bgGradient: 'from-red-50 to-pink-50',
+    symbolism: 'Bridge - God Bridges the Gap'
   },
   'Salvation Through Faith': { 
-    icon: Cross, 
-    gradient: 'from-blue-500 to-indigo-600',
-    bgGradient: 'from-blue-50 to-indigo-50'
+    icon: Signpost, // Crossroad sign - choose Jesus
+    gradient: 'from-white via-gray-100 to-white', // White = purity, cleansing
+    bgGradient: 'from-blue-50 to-indigo-50',
+    symbolism: 'Crossroad - Choose Jesus'
   },
   'Call Upon the Lord': { 
-    icon: Phone, 
-    gradient: 'from-green-500 to-emerald-600',
-    bgGradient: 'from-green-50 to-emerald-50'
+    icon: Sparkle, // Gold/Yellow = Heaven, glory
+    gradient: 'from-yellow-400 via-amber-500 to-yellow-600', // Gold = Heaven
+    bgGradient: 'from-yellow-50 to-amber-50',
+    symbolism: 'Heaven - Eternal Life'
   }
 };
 
@@ -112,8 +117,8 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               // Verse reference (###)
               if (line.startsWith('### ')) {
                 return (
-                  <div key={i} className="inline-block bg-gradient-to-r from-blue-100 to-purple-100 px-4 py-2 rounded-full mb-2">
-                    <h3 className="text-sm font-bold text-blue-900">{line.replace('### ', '')}</h3>
+                  <div key={i} className="inline-block bg-gradient-to-r from-blue-100 to-purple-100 px-5 py-3 rounded-full mb-3 animate-in fade-in duration-500">
+                    <h3 className="text-base font-bold text-blue-900">{line.replace('### ', '')}</h3>
                   </div>
                 );
               }
@@ -138,7 +143,7 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
               
               // Bold text
               if (line.startsWith('**') && line.endsWith('**')) {
-                return <p key={i} className="font-bold text-gray-900 text-sm">{line.replace(/\*\*/g, '')}</p>;
+                return <p key={i} className="font-bold text-gray-900 text-base">{line.replace(/\*\*/g, '')}</p>;
               }
               
               // List items - make more compact
@@ -148,13 +153,13 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                 const match = listText.match(/\*\*(.+?)\*\*:\s*"(.+?)"/);
                 if (match) {
                   return (
-                    <div key={i} className="flex items-start gap-2 text-xs">
+                    <div key={i} className="flex items-start gap-3 text-sm">
                       <span className="text-purple-600 font-semibold min-w-fit">{match[1]}</span>
                       <span className="text-gray-600 line-clamp-1">"{match[2]}"</span>
                     </div>
                   );
                 }
-                return <li key={i} className="ml-4 text-sm text-gray-700">{listText}</li>;
+                return <li key={i} className="ml-4 text-base text-gray-700">{listText}</li>;
               }
               
               // Divider
@@ -162,9 +167,9 @@ export function ChatMessage({ role, content, isTyping }: ChatMessageProps) {
                 return <hr key={i} className="my-3 border-purple-200" />;
               }
               
-              // Regular paragraph - make more compact
+              // Regular paragraph - readable size
               if (line.trim()) {
-                return <p key={i} className="text-sm leading-relaxed text-gray-700">{line}</p>;
+                return <p key={i} className="text-base leading-relaxed text-gray-700">{line}</p>;
               }
               
               return null;
