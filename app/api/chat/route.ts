@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
             if (done) break;
             
             const chunk = value as any;
+            console.log('[STREAM] Chunk type:', chunk.type, 'Full chunk:', JSON.stringify(chunk));
             
             // Transform Mastra chunks to AI SDK format
             if (chunk.type === 'text-delta') {
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
                 textDelta: chunk.delta
               });
             } else if (chunk.type === 'tool-result') {
+              console.log('[STREAM] Tool result detected!', chunk);
               // Pass through tool results
               controller.enqueue({
                 type: 'tool-result',
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
                 result: chunk.result
               });
             } else if (chunk.type === 'tool-call') {
+              console.log('[STREAM] Tool call detected!', chunk);
               // Pass through tool calls
               controller.enqueue({
                 type: 'tool-call',
@@ -78,6 +81,8 @@ export async function POST(req: NextRequest) {
                 toolName: chunk.toolName,
                 args: chunk.args
               });
+            } else {
+              console.log('[STREAM] Unknown chunk type:', chunk.type);
             }
           }
         } catch (error) {
