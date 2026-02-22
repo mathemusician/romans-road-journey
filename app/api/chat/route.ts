@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
             }
             
             const chunk = value as any;
+            console.log('[STREAM] Chunk type:', chunk.type);
             
             // Transform Mastra text-delta chunks to AI SDK format
             if (chunk.type === 'text-delta') {
