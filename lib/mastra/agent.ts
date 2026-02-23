@@ -155,7 +155,7 @@ export async function generateAgentResponse(
       model: OPENROUTER_MODELS.primary,
       messages: messagePayload,
       temperature: 0.7,
-      max_tokens: 1000,
+      max_tokens: 4000,
     });
 
     const response = completion.choices[0]?.message?.content || '';
@@ -179,7 +179,7 @@ export async function generateAgentResponse(
         model: OPENROUTER_MODELS.fallback,
         messages: messagePayload,
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 4000,
       });
 
       const response = completion.choices[0]?.message?.content || '';
