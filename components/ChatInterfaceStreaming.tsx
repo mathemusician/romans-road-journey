@@ -50,6 +50,17 @@ export function ChatInterface() {
     }),
   });
 
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+
+  // Track if user has sent any messages (auto-hide Romans Road button)
+  useEffect(() => {
+    // Check if there are any user messages (excluding welcome message)
+    const userMessages = messages.filter(m => m.role === 'user');
+    if (userMessages.length > 0) {
+      setHasUserInteracted(true);
+    }
+  }, [messages]);
+
   // Add welcome message on mount
   useEffect(() => {
     if (messages.length === 0) {
@@ -215,8 +226,8 @@ export function ChatInterface() {
 
       <div className="border-t border-white/10 bg-black/20 backdrop-blur-md">
         <div className="max-w-4xl mx-auto p-6 space-y-4">
-          {state.currentStep === 0 && (
-            <div className="mb-4 animate-in slide-in-from-bottom-8 fade-in duration-700">
+          {state.currentStep === 0 && !hasUserInteracted && (
+            <div className="mb-4 animate-in slide-in-from-bottom-8 fade-in duration-700 relative">
               <button
                 onClick={handleStartJourney}
                 disabled={isStreaming}
