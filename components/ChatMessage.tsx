@@ -74,16 +74,43 @@ function parseInlineMarkdown(text: string): React.ReactNode {
 
 // Helper to render text with both markdown and scripture links
 function renderTextWithLinks(text: string): React.ReactNode {
-  // First linkify scripture references
-  const linkedParts = linkifyScripture(text);
+  // Strategy: We need to handle both **bold** and scripture references
+  // Process the text to handle bold first, then linkify scripture in each segment
   
-  // Then apply markdown to each text part
-  return linkedParts.map((part, idx) => {
-    if (typeof part === 'string') {
-      return <span key={`md-${idx}`}>{parseInlineMarkdown(part)}</span>;
+  const boldPattern = /\*\*(.+?)\*\*/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyCounter = 0;
+
+  while ((match = boldPattern.exec(text)) !== null) {
+    // Add text before the bold (linkify it)
+    if (match.index > lastIndex) {
+      const beforeText = text.substring(lastIndex, match.index);
+      const linked = linkifyScripture(beforeText);
+      parts.push(...linked.map(p => React.cloneElement(p as React.ReactElement, { key: `part-${keyCounter++}` })));
     }
-    return part; // Already a ScriptureReference component
-  });
+    
+    // Add bold text (also linkify it)
+    const boldText = match[1];
+    const linkedBold = linkifyScripture(boldText);
+    parts.push(
+      <strong key={`bold-${keyCounter++}`} className="font-bold">
+        {linkedBold}
+      </strong>
+    );
+    
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text (linkify it)
+  if (lastIndex < text.length) {
+    const remainingText = text.substring(lastIndex);
+    const linked = linkifyScripture(remainingText);
+    parts.push(...linked.map(p => React.cloneElement(p as React.ReactElement, { key: `part-${keyCounter++}` })));
+  }
+
+  return parts.length > 0 ? parts : text;
 }
 
 // Collapsible search result component
