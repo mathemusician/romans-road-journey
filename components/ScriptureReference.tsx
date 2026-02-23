@@ -265,7 +265,7 @@ export function ScriptureReference({ reference, children, className }: Scripture
       )}
 
       {/* Mobile Bottom Sheet */}
-      {isMobile && isOpen && (
+      {isMobile && isOpen && typeof document !== 'undefined' && createPortal(
         <>
           {/* Backdrop */}
           <div
@@ -355,7 +355,8 @@ export function ScriptureReference({ reference, children, className }: Scripture
               )}
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
     </>
   );
