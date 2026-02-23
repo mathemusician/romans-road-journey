@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         messages,
         maxSteps: 10, // Allow multiple tool calls for deep research (default is 1)
         modelSettings: {
-          maxOutputTokens: 4000, // Prevent response truncation
+          maxOutputTokens: 8000, // Increased to prevent truncation in final response after tool calls
         },
       },
     });
