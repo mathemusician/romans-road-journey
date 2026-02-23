@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { ScriptureReference } from './ScriptureReference';
+import { linkifyScripture } from '@/lib/bible/linkify-scripture';
 import { BookOpen, Sparkles, AlertCircle, Skull, Heart, Cross, Phone, OctagonX, AlertTriangle, GitBranch, Signpost, Sparkle } from 'lucide-react';
 
 interface ChatMessageProps {
@@ -70,6 +72,20 @@ function parseInlineMarkdown(text: string): React.ReactNode {
   return parts.length > 0 ? parts : text;
 }
 
+// Helper to render text with both markdown and scripture links
+function renderTextWithLinks(text: string): React.ReactNode {
+  // First linkify scripture references
+  const linkedParts = linkifyScripture(text);
+  
+  // Then apply markdown to each text part
+  return linkedParts.map((part, idx) => {
+    if (typeof part === 'string') {
+      return <span key={`md-${idx}`}>{parseInlineMarkdown(part)}</span>;
+    }
+    return part; // Already a ScriptureReference component
+  });
+}
+
 // Collapsible search result component
 function CollapsibleSearchResult({ query, verses }: { query: string; verses: any[] }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -95,8 +111,10 @@ function CollapsibleSearchResult({ query, verses }: { query: string; verses: any
               key={vIdx}
               className="p-3 rounded-lg bg-white dark:bg-gray-800 border border-purple-200 dark:border-gray-700"
             >
-              <div className="font-semibold text-purple-700 dark:text-purple-300 text-sm mb-1">
-                {verse.reference}
+              <div className="mb-1">
+                <ScriptureReference reference={verse.reference}>
+                  {verse.reference}
+                </ScriptureReference>
               </div>
               <p className="text-sm text-gray-700 dark:text-gray-300 italic">
                 "{verse.text}"
@@ -196,7 +214,7 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
           </div>
         ) : content && !messageParts ? (
           <div className="text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-            {parseInlineMarkdown(content)}
+            {renderTextWithLinks(content)}
           </div>
         ) : (
           <div className="space-y-3">
@@ -328,7 +346,7 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
               if (part.type === 'text') {
                 return (
                   <div key={idx} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                    {parseInlineMarkdown(part.text)}
+                    {renderTextWithLinks(part.text)}
                   </div>
                 );
               }
