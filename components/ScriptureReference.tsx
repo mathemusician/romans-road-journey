@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { BookOpen, ExternalLink, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { 
@@ -169,7 +170,7 @@ export function ScriptureReference({ reference, children, className }: Scripture
       </button>
 
       {/* Desktop Popover - Centered Modal */}
-      {!isMobile && isOpen && (
+      {!isMobile && isOpen && typeof document !== 'undefined' && createPortal(
         <>
           {/* Backdrop */}
           <div
@@ -259,7 +260,8 @@ export function ScriptureReference({ reference, children, className }: Scripture
             )}
           </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       {/* Mobile Bottom Sheet */}
