@@ -45,7 +45,10 @@ export async function POST(req: NextRequest) {
     const stream = await handleChatStream({
       mastra,
       agentId: 'bibleAgent',
-      params: { messages },
+      params: { 
+        messages,
+        maxSteps: 10, // Allow multiple tool calls for deep research (default is 1)
+      },
     });
     
     return createUIMessageStreamResponse({ stream });
