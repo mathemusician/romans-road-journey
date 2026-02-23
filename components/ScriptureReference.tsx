@@ -168,20 +168,25 @@ export function ScriptureReference({ reference, children, className }: Scripture
         {children || reference}
       </button>
 
-      {/* Desktop Popover */}
+      {/* Desktop Popover - Centered Modal */}
       {!isMobile && isOpen && (
-        <div
-          ref={popoverRef}
-          className="fixed z-50 w-96 max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-top-2 duration-200"
-          style={{
-            top: triggerRef.current
-              ? `${triggerRef.current.getBoundingClientRect().bottom + 8}px`
-              : '50%',
-            left: triggerRef.current
-              ? `${triggerRef.current.getBoundingClientRect().left}px`
-              : '50%',
-          }}
-        >
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40 animate-in fade-in duration-200"
+            onClick={handleClose}
+          />
+          
+          {/* Centered Modal */}
+          <div
+            ref={popoverRef}
+            className="fixed z-50 w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
           <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between rounded-t-xl">
             <div className="flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
@@ -252,7 +257,8 @@ export function ScriptureReference({ reference, children, className }: Scripture
               </p>
             )}
           </div>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Mobile Bottom Sheet */}
