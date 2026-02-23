@@ -56,4 +56,9 @@ export const bibleAgent = new Agent({
   tools: {
     bibleSearchTool,
   },
+  defaultOptions: {
+    modelSettings: {
+      maxOutputTokens: 8192, // Claude 3.5 Sonnet max output — prevents truncation
+    },
+  },
 });

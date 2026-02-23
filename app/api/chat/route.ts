@@ -11,7 +11,7 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
@@ -48,9 +48,6 @@ export async function POST(req: NextRequest) {
       params: { 
         messages,
         maxSteps: 10, // Allow multiple tool calls for deep research (default is 1)
-        modelSettings: {
-          maxOutputTokens: 8000, // Increased to prevent truncation in final response after tool calls
-        },
       },
     });
     
