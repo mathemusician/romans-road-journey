@@ -180,11 +180,12 @@ export function ScriptureReference({ reference, children, className }: Scripture
           {/* Centered Modal */}
           <div
             ref={popoverRef}
-            className="fixed z-50 w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200"
+            className="fixed z-50 w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
             style={{
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
+              animation: 'fadeIn 0.2s ease-out',
             }}
           >
           <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between rounded-t-xl">
