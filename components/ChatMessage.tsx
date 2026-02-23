@@ -113,6 +113,92 @@ function renderTextWithLinks(text: string): React.ReactNode {
   return parts.length > 0 ? parts : text;
 }
 
+// Helper to render text with Romans Road formatting AND scripture links
+function renderFormattedText(text: string): React.ReactNode[] {
+  return text.split('\n').map((line, i) => {
+    // Main heading (##) - Add large visual icon
+    if (line.startsWith('## ')) {
+      const heading = line.replace('## ', '');
+      const headingStepConfig = Object.keys(stepIcons).find(title => heading.includes(title));
+      const headingConfig = headingStepConfig ? stepIcons[headingStepConfig] : null;
+      
+      return (
+        <div key={i} className="mb-8 animate-in slide-in-from-left duration-700">
+          {headingConfig && (
+            <div className="relative">
+              <div className={cn(
+                "w-32 h-32 mx-auto mb-6 rounded-full flex items-center justify-center shadow-2xl animate-in zoom-in-50 duration-1000 hover:scale-110 hover:rotate-12 transition-all cursor-pointer relative",
+                `bg-gradient-to-br ${headingConfig.gradient}`
+              )}>
+                <div className="absolute inset-0 rounded-full bg-white/20 animate-ping" style={{ animationDuration: '3s' }}></div>
+                <headingConfig.icon className="w-16 h-16 text-white drop-shadow-2xl relative z-10" style={{ animation: 'bounce 2s ease-in-out infinite' }} />
+              </div>
+              <div className="text-center mb-4">
+                <span className="inline-block px-4 py-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-full text-sm font-semibold text-purple-700 dark:text-purple-300">
+                  {headingConfig.symbolism}
+                </span>
+              </div>
+            </div>
+          )}
+          <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent animate-in fade-in duration-1000 mb-4">
+            {heading}
+          </h2>
+        </div>
+      );
+    }
+    
+    // Verse reference (###)
+    if (line.startsWith('### ')) {
+      return (
+        <div key={i} className="flex items-center justify-center mb-4 animate-in fade-in duration-500">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-md opacity-30 animate-pulse"></div>
+            <div className="relative bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/50 dark:to-purple-900/50 px-6 py-3 rounded-full border-2 border-blue-200 dark:border-blue-700">
+              <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">{renderTextWithLinks(line.replace('### ', ''))}</h3>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Quote block
+    if (line.startsWith('**"') && line.endsWith('"**')) {
+      return (
+        <blockquote key={i} className="my-6 pl-6 border-l-4 border-purple-400 dark:border-purple-600 italic text-xl text-gray-700 dark:text-gray-300 animate-in slide-in-from-left duration-500">
+          {renderTextWithLinks(line.replace(/\*\*"/g, '"').replace(/"?\*\*$/g, '"'))}
+        </blockquote>
+      );
+    }
+    
+    // List items
+    if (line.startsWith('- ')) {
+      return (
+        <div key={i} className="flex items-start gap-3 mb-3 animate-in slide-in-from-left duration-300">
+          <div className="mt-2 w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex-shrink-0"></div>
+          <p className="text-base text-gray-700 dark:text-gray-300 flex-1">{renderTextWithLinks(line.replace('- ', ''))}</p>
+        </div>
+      );
+    }
+    
+    // Divider
+    if (line === '---') {
+      return <hr key={i} className="my-8 border-t-2 border-purple-200 dark:border-purple-800" />;
+    }
+    
+    // Empty line
+    if (line.trim() === '') {
+      return <div key={i} className="h-2" />;
+    }
+    
+    // Regular paragraph
+    return (
+      <p key={i} className="text-base text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">
+        {renderTextWithLinks(line)}
+      </p>
+    );
+  });
+}
+
 // Collapsible search result component
 function CollapsibleSearchResult({ query, verses }: { query: string; verses: any[] }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -369,11 +455,11 @@ export function ChatMessage({ role, content, isTyping, messageParts }: ChatMessa
         {!isUser && messageParts && messageParts.length > 0 && (
           <div className="mt-4 space-y-4">
             {messageParts.map((part: any, idx: number) => {
-              // Render text parts
+              // Render text parts with Romans Road formatting
               if (part.type === 'text') {
                 return (
-                  <div key={idx} className="text-base text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                    {renderTextWithLinks(part.text)}
+                  <div key={idx} className="space-y-3">
+                    {renderFormattedText(part.text)}
                   </div>
                 );
               }

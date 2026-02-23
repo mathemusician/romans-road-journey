@@ -177,14 +177,14 @@ export function ScriptureReference({ reference, children, className }: Scripture
             onClick={handleClose}
           />
           
-          {/* Centered Modal */}
+          {/* Top-Center Modal */}
           <div
             ref={popoverRef}
             className="fixed z-50 w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700"
             style={{
-              top: '50%',
+              top: '5vh',
               left: '50%',
-              transform: 'translate(-50%, -50%)',
+              transform: 'translateX(-50%)',
               animation: 'fadeIn 0.2s ease-out',
             }}
           >
