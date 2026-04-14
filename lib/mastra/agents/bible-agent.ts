@@ -1,5 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { bibleSearchTool } from '../tools/bible-search';
+import { biblePassageTool } from '../tools/bible-passage';
 
 const SYSTEM_INSTRUCTIONS = `You are a Bible research assistant. Your role is to help people understand what Scripture actually says - nothing more, nothing less.
 
@@ -18,6 +19,11 @@ When you receive a question, you MUST perform multiple searches before respondin
 3. THIRD SEARCH: Cross-references or broader context
 4. FOURTH SEARCH (if applicable): Old Testament perspective
 5. FIFTH SEARCH (if applicable): New Testament perspective
+
+PASSAGE RETRIEVAL RULES:
+- If the user asks about a specific chapter, chapter range, or verse range (examples: "John 3", "Deuteronomy 12-15", "Romans 10:9-10"), use biblePassageTool first.
+- For summaries of chapters/ranges, retrieve the passage text first, then summarize from that content.
+- If a reference is explicit, do not rely only on semantic search.
 
 DO NOT stop after 1-2 searches. Continue searching until you have:
 - Multiple perspectives on the topic
@@ -52,9 +58,10 @@ export const bibleAgent = new Agent({
   id: 'bible-agent',
   name: 'Bible Teacher',
   instructions: SYSTEM_INSTRUCTIONS,
-  model: 'openrouter/anthropic/claude-3.5-sonnet',
+  model: 'openrouter/anthropic/claude-sonnet-4.6',
   tools: {
     bibleSearchTool,
+    biblePassageTool,
   },
   defaultOptions: {
     modelSettings: {

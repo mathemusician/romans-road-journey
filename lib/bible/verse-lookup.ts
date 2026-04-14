@@ -123,7 +123,8 @@ function normalizeBookName(book: string): string {
 export function parseScriptureReference(reference: string): ParsedReference | null {
   // Regex to match patterns like:
   // "John 3:16", "1 John 3:16-17", "Gen 1:1", "Romans 8:28-30"
-  const pattern = /^(\d?\s?[A-Za-z]+)\s+(\d+):(\d+)(?:-(\d+))?$/;
+  // Also supports en/em dashes in ranges, e.g. "John 13:34—35".
+  const pattern = /^(\d?\s?[A-Za-z]+)\s+(\d+):(\d+)(?:\s*[-–—]\s*(\d+))?$/;
   const match = reference.trim().match(pattern);
   
   if (!match) return null;
@@ -219,7 +220,7 @@ export function getChapter(book: string, chapter: number): BibleVerse[] {
 // Detect scripture references in text
 export function detectScriptureReferences(text: string): ParsedReference[] {
   // Pattern to match scripture references in text
-  const pattern = /\b(\d?\s?[A-Za-z]+)\s+(\d+):(\d+)(?:-(\d+))?\b/g;
+  const pattern = /\b(\d?\s?[A-Za-z]+)\s+(\d+):(\d+)(?:\s*[-–—]\s*(\d+))?\b/g;
   const matches: ParsedReference[] = [];
   let match;
   

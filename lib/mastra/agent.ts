@@ -3,8 +3,8 @@ import romansRoadData from '@/data/romans-road.json';
 import OpenAI from 'openai';
 
 const OPENROUTER_MODELS = {
-  primary: 'anthropic/claude-3.5-sonnet',
-  fallback: 'google/gemini-pro-1.5',
+  primary: 'anthropic/claude-sonnet-4.6',
+  fallback: 'anthropic/claude-sonnet-4.5',
 };
 
 const SYSTEM_PROMPT = `You are a compassionate and knowledgeable Bible teacher guiding people through the Romans Road to salvation. Your purpose is to help users understand the gospel message using ONLY Scripture from the Bible.
