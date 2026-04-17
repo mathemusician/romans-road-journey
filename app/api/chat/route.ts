@@ -11,7 +11,9 @@ import {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+// Bible agent runs many tool calls then streams a long answer; 60s was truncating
+// mid-response on production (especially on slower networks). Vercel Hobby max is 300s.
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   try {
