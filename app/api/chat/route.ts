@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { handleChatStream } from '@mastra/ai-sdk';
 import { createUIMessageStream, createUIMessageStreamResponse } from 'ai';
 import { mastra } from '@/lib/mastra';
+import { withMemorySession } from '@/lib/mastra/tools/memory-context';
+import { beginMemoryTurn } from '@/lib/mastra/tools/memory';
 import {
   getStepMessage,
   getCompletionMessage,
@@ -19,7 +21,12 @@ export async function POST(req: NextRequest) {
   try {
     console.log('[STREAM API] Received request');
     const { messages, data } = await req.json();
-    const { action, state } = data || {};
+    const { action, state, memorySessionId } = data || {};
+    const sessionId =
+      typeof memorySessionId === 'string' && memorySessionId.trim().length > 0
+        ? memorySessionId
+        : 'default';
+    beginMemoryTurn(sessionId);
 
     console.log('[STREAM API] Action:', action, 'State:', state);
 
@@ -42,15 +49,24 @@ export async function POST(req: NextRequest) {
 
     // Handle user questions with Mastra agent streaming
     console.log('[STREAM API] Streaming agent response');
+    const recentMessages = getRecentMessages(messages, 3);
+    console.log(
+      '[STREAM API] Context window:',
+      Array.isArray(messages) ? messages.length : 0,
+      '->',
+      recentMessages.length
+    );
     
     // Use handleChatStream - it properly transforms fullStream including tool results
-    const stream = await handleChatStream({
-      mastra,
-      agentId: 'bibleAgent',
-      params: { 
-        messages,
-        maxSteps: 10, // Allow multiple tool calls for deep research (default is 1)
-      },
+    const stream = await withMemorySession(sessionId, async () => {
+      return await handleChatStream({
+        mastra,
+        agentId: 'bibleAgent',
+        params: { 
+          messages: recentMessages,
+          maxSteps: 10, // Allow multiple tool calls for deep research (default is 1)
+        },
+      });
     });
     
     return createUIMessageStreamResponse({ stream });
@@ -69,6 +85,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
+function getRecentMessages(messages: unknown, keep: number) {
+  if (!Array.isArray(messages)) return [];
+  if (messages.length <= keep) return messages;
+  return messages.slice(-keep);
+}
+
 async function handleTemplateStream(action: string, state: ConversationState) {
   console.log('[STREAM API] Handling template:', action);
   
@@ -76,7 +98,7 @@ async function handleTemplateStream(action: string, state: ConversationState) {
     stream: createUIMessageStream({
       async execute({ writer }) {
         let templateText = '';
-        let newState = { ...state };
+        const newState = { ...state };
 
         // Generate template content
         if (action === 'welcome') {

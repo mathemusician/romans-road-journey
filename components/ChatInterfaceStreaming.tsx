@@ -31,6 +31,11 @@ Click "Start the Romans Road" when you're ready, or feel free to ask me any ques
 
 export function ChatInterface() {
   const [input, setInput] = useState('');
+  const memorySessionIdRef = useRef<string>(
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
   const [state, setState] = useState<ConversationState>({
     currentStep: 0,
     completedSteps: [],
@@ -91,7 +96,7 @@ export function ChatInterface() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [],
-          data: { action, state },
+          data: { action, state, memorySessionId: memorySessionIdRef.current },
         }),
       });
 
@@ -152,7 +157,7 @@ export function ChatInterface() {
 
     sendMessage(
       { text: input },
-      { body: { data: { state } } }
+      { body: { data: { state, memorySessionId: memorySessionIdRef.current } } }
     );
     setInput('');
   };

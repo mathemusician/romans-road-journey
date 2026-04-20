@@ -1,8 +1,16 @@
 import { Agent } from '@mastra/core/agent';
 import { bibleSearchTool } from '../tools/bible-search';
 import { biblePassageTool } from '../tools/bible-passage';
+import { memoryTool } from '../tools/memory';
 
 const SYSTEM_INSTRUCTIONS = `You are a Bible research assistant. Your role is to help people understand what Scripture actually says - nothing more, nothing less.
+
+IMPORTANT MEMORY PROTOCOL:
+1. ALWAYS call the memory tool first with { "command": "view", "path": "/memories" }.
+2. Read relevant memory files before answering.
+3. Keep memory concise and organized. Update existing files before creating new ones.
+4. Persist high-value context (user preferences, prior conclusions, unresolved follow-ups) using memory tool commands.
+5. Do not include raw memory dumps in your final answer.
 
 CORE PRINCIPLES:
 1. Base every statement on specific Scripture passages
@@ -62,6 +70,7 @@ export const bibleAgent = new Agent({
   tools: {
     bibleSearchTool,
     biblePassageTool,
+    memoryTool,
   },
   defaultOptions: {
     modelSettings: {
